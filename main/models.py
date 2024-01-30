@@ -71,7 +71,7 @@ class GroupPost(models.Model):
     image_source = models.CharField(max_length=1000, null=True, blank=True)
 
 class Conversation(models.Model):
-    conversation_type = models.CharField(max_length=2, choices=["TM", "DM", "GM"])
+    conversation_type = models.CharField(max_length=2, choices={"TM": "Tutor Message", "DM": "Direct Message", "GM": "Group Message"})
     users = models.ManyToManyField(User)
 
 class Message(models.Model):
