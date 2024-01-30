@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 import json
+import datetime
 
 class University(models.Model):
     name = models.CharField(max_length=150)
@@ -48,4 +49,33 @@ class StudyGroup(models.Model):
     invitations = models.ManyToManyField(User, related_name="invitations_set")
     name = models.CharField(max_length=100)
     subject = models.CharField(max_length=100)
-    course = models.CharField(max_length=100, null=True, blank=True)
+    description = models.TextField(null=True, blank=True)
+    course = models.CharField(max_length=10, null=True, blank=True)
+
+class Meeting(models.Model):
+    title = models.CharField(max_length=50)
+    meet_time = models.DateTimeField(auto_now_add=False, auto_now=False)
+    description = models.TextField(null=True, blank=True)
+    group = models.ForeignKey(StudyGroup, on_delete=models.CASCADE)
+
+    def has_passed(self):
+        return self.meet_time < datetime.datetime.now()
+
+
+class GroupPost(models.Model):
+    poster = models.ForeignKey(User, on_delete=models.CASCADE)
+    group = models.ForeignKey(StudyGroup, on_delete=models.CASCADE)
+    time = models.DateTimeField(auto_now_add=True)
+    title = models.CharField(max_length = 130)
+    text = models.TextField(null=True, blank=True)
+    image_source = models.CharField(max_length=1000, null=True, blank=True)
+
+class Conversation(models.Model):
+    conversation_type = models.CharField(max_length=2, choices=["TM", "DM", "GM"])
+    users = models.ManyToManyField(User)
+
+class Message(models.Model):
+    time = models.DateTimeField(auto_now_add=True)
+    text = models.TextField()
+    creator = models.ForeignKey(User, on_delete=models.CASCADE)
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE)
