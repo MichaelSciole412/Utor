@@ -7,9 +7,14 @@ class University(models.Model):
     domains = models.TextField(null=True)
     web_pages = models.TextField(null=True)
     country = models.CharField(max_length=50)
-    alpha_two_code = models.CharField(max_length=10)
-    state_province = models.CharField(max_length=100)
+    alpha_two_code = models.CharField(max_length=10, null=True)
+    state_province = models.CharField(max_length=100,null=True)
 
+    def get_domains(self):
+        return json.loads(self.domains or "[]")
+
+    def get_webpages(self):
+        return json.loads(self.web_pages or "[]")
 
 class User(AbstractUser):
     tutor_subjects = models.TextField(null=True)
@@ -35,3 +40,12 @@ class User(AbstractUser):
             except ValueError:
                 pass
         self.set_tutor_subjects(current)
+
+class StudyGroup(models.Model):
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="owned_studygroups")
+    user_list = models.ManyToManyField(User)
+    requests = models.ManyToManyField(User, related_name="requests_set")
+    invitations = models.ManyToManyField(User, related_name="invitations_set")
+    name = models.CharField(max_length=100)
+    subject = models.CharField(max_length=100)
+    course = models.CharField(max_length=100, null=True, blank=True)
