@@ -1,29 +1,30 @@
 {% extends 'base.html' %}
 
-{% block title %}Login{% endblock %}
+{% block title %}Create Account{% endblock %}
 
 {% block content %}
 <div class="outer">
   <div class="form smallform">
     <div class="center text-center">
-    <h2>Login</h2>
+    <h2>Create An Account</h2>
     </div>
-    {% if message %}
-    <div class="alert-message">
-      {{ message }}
-    </div>
-    {% elif form.username.errors %}
-    <div class="alert-message">
-      {{ form.username.errors.0 }}
-    </div>
-    {% endif %}
-    <form class="form-form" action="{% url 'login' %}" method="POST">
+    <form class="form-form" action="{% url 'create_account' %}" method="POST">
       {% csrf_token %}
       <table class="form-table">
       {% for field in form %}
         <tr>
           <th style="text-align:left;">{{ field.label }}</th>
           <td>{{ field }}</td>
+          <td>
+            {%for error in field.errors %}
+              <p>{{ error }}</p>
+            {% endfor %}
+            {% if field.name == "password" %}
+              {%for error in form.non_field_errors %}
+                <p>{{ error }}</p>
+              {% endfor %}
+            {% endif %}
+          </td>
         </tr>
       {% endfor %}
       </table>
@@ -32,7 +33,7 @@
     </div>
     </form>
     <div>
-      <a href="{% url 'create_account' %}">Create Account</a>
+      <a href="{% url 'login' %}">Login</a>
     </div>
   </div>
 <div>

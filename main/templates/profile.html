@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ user.username }}'s Profile{% endblock %}
+
+{% block content %}
+<div class="outer">
+  <div class="maindiv">
+    <div class="center text-center">
+      <h1>{{ user.username }}'s Profile</h1>
+    </div>
+    <table>
+      <tr>
+        <th>University</th>
+        <td>{{ user.university.name }}</td>
+      </tr>
+      <tr>
+        <th valign=top>Currently Studying</th>
+        <td>
+          {% for subject in user.get_student_subjects %}
+            <div class="list">
+              <div style="width: 90%;">{{ subject }}</div>
+              {% if current_user %}
+              <form action="{% url 'profile' user.username %}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="remove_subject" value="{{ subject }}" />
+                <input style="float: right;" class="submit-button" type="submit" value="Remove Subject">
+              </form>
+              {% endif %}
+            </div>
+          {% endfor %}
+          {% if current_user %}
+            <div class="list">
+              <form class="miniform" action="{% url 'profile' user.username %}" method="POST">
+                {% csrf_token %}
+                <input class="text-input" type="text" name="new_subject" required />
+                <input class="submit-button" type="submit" value="Add Subject" />
+              </form>
+            </div>
+          {% endif %}
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>
+{% endblock %}
