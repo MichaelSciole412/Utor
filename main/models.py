@@ -17,10 +17,19 @@ class University(models.Model):
     def get_webpages(self):
         return json.loads(self.web_pages or "[]")
 
+    @staticmethod
+    def get_valid_domains():
+        with open("main/static/main/valid_domains.txt") as vd:
+            ret = eval(vd.read())
+        return ret
+
 class User(AbstractUser):
     tutor_subjects = models.TextField(null=True)
+    student_subjects = models.TextField(null=True)
     university = models.ForeignKey(University, on_delete=models.PROTECT, null=True, blank=True)
     bio = models.TextField(default="This user hasn't set their bio")
+    is_verified = models.BooleanField(default=False)
+    email_key = models.CharField(max_length=50, unique=True)
 
     def get_tutor_subjects(self):
         return json.loads(self.tutor_subjects or "[]")
@@ -41,6 +50,26 @@ class User(AbstractUser):
             except ValueError:
                 pass
         self.set_tutor_subjects(current)
+
+    def get_student_subjects(self):
+        return json.loads(self.student_subjects or "[]")
+    def set_student_subjects(self, subjects):
+        self.student_subjects = json.dumps(subjects)
+        self.save()
+    def add_student_subject(self, *subs):
+        current = self.get_student_subjects()
+        for x in subs:
+            if x not in current:
+                current.append(x)
+        self.set_student_subjects(current)
+    def remove_student_subject(self, *subs):
+        current = self.get_student_subjects()
+        for x in subs:
+            try:
+                current.remove(x)
+            except ValueError:
+                pass
+        self.set_student_subjects(current)
 
 class StudyGroup(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="owned_studygroups")
