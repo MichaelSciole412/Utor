@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ group.name }}{% endblock %}
+
+
+
+{% block content %}
+<div class="outer">
+  <div class="maindiv">
+    <div class="center text-center">
+      <h1>{{ group.name }}</h1>
+      <h4>Group Owner: <a href="{% url 'profile' group.owner.username %}" class="userlink">{{ group.owner.username }}</a></h4>
+    </div>
+    <div class="sidebyside" style="background: #DDF;">
+      <div class="description innersidebyside">
+        <h3>Description</h3>
+        <div id="desc">
+          <p id="desc_text">{{ group.description }}</p>
+          {% if request.user == group.owner %}
+          <button id="b1" onclick="editDesc();">Edit Description</button>
+          {% endif %}
+        </div>
+      </div>
+      <div class="userlist center innersidebyside">
+        <h3>User List</h3>
+        {% for usr in group.user_list.all %}
+          <div class="list2">
+            <div style="width: 90%; padding: 7px; margin-left: 10px;"><a href="{% url 'profile' usr.username %}" class="userlink">{{ usr.username }}</a></div>
+            {% if request.user == group.owner and usr != group.owner %}
+              <button style="min-width: 80px;">Kick User</button>
+            {% endif %}
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}<script src="{% static 'main/view_group.js' %}"
+                          defer
+                          data-groupid="{{ group.id }}"></script>{% endblock %}

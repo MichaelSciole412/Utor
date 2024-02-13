@@ -1,6 +1,7 @@
 from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.template import loader
 from django.shortcuts import render, redirect, reverse, get_object_or_404
+from django.views.decorators.csrf import csrf_exempt
 from .forms import *
 from .models import *
 from django.contrib.auth import authenticate, login as log_in, logout as log_out
@@ -92,3 +93,53 @@ def profile(request, username=""):
             usr.remove_student_subject(request.POST.get("remove_subject"))
             return redirect(reverse("profile", kwargs={"username": username}))
     return render(request, "profile.html", context={"user": usr, "current_user": current_user})
+
+@ensure_authenticated
+def study_groups(request):
+    my_groups = StudyGroup.objects.filter(user_list=request.user)
+    base = StudyGroup.objects.filter(university=request.user.university)
+    rec_groups = StudyGroup.objects.none()
+    for subject in request.user.get_student_subjects():
+        rec_groups |= base.filter(subject__iexact=subject).exclude(user_list=request.user)
+    for subject in request.user.get_student_subjects():
+        rec_groups |= base.filter(subject__icontains=subject).exclude(user_list=request.user)
+
+
+    return render(request, "study_groups.html", context={"my_groups": my_groups, "rec_groups": rec_groups})
+
+@ensure_authenticated
+def create_study_group(request):
+    form = StudyGroupForm()
+    if request.method == "POST":
+        form = StudyGroupForm(request.POST)
+        if form.is_valid():
+            new_group = StudyGroup()
+            new_group.owner = request.user
+            new_group.university = request.user.university
+            new_group.name = form.cleaned_data["group_name"]
+            new_group.subject = form.cleaned_data["subject"]
+            if form.cleaned_data["course"]:
+                new_group.course = form.cleaned_data["course"]
+            new_group.description = form.cleaned_data["description"]
+            new_group.save()
+            new_group.user_list.add(request.user)
+            return redirect(reverse("study_groups"))
+    return render(request, "create_study_group.html", context={"form": form})
+
+@ensure_authenticated
+def view_group(request, group_id):
+    group = get_object_or_404(StudyGroup, pk=group_id)
+    usr_in_group = request.user in group.user_list.all()
+    return render(request, "view_group.html", context={"group": group, "usr_in_group": usr_in_group})
+
+### AJAX
+
+@csrf_exempt
+@ensure_authenticated
+def save_desc(request, group_id):
+    request_data = json.loads(request.body)
+    group = get_object_or_404(StudyGroup, pk=group_id)
+    if request.user == group.owner:
+        group.description = request_data['desc']
+        group.save()
+        return HttpResponse("CONFIRM")

@@ -73,6 +73,7 @@ class User(AbstractUser):
 
 class StudyGroup(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="owned_studygroups")
+    university = models.ForeignKey(University, on_delete=models.CASCADE)
     user_list = models.ManyToManyField(User)
     requests = models.ManyToManyField(User, related_name="requests_set")
     invitations = models.ManyToManyField(User, related_name="invitations_set")

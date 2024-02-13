@@ -9,4 +9,8 @@ urlpatterns = [
 	path("create_account/", views.create_account, name="create_account"),
 	path("verify_account/<str:email_key>/", views.verify_account, name="verify_account"),
 	path("profile/<str:username>/", views.profile, name="profile"),
+	path("groups/", views.study_groups, name="study_groups"),
+	path("groups/create_study_group/", views.create_study_group, name="create_study_group"),
+	path("groups/view_group/<int:group_id>/", views.view_group, name="view_group"),
+	path("ajax/save_desc/<int:group_id>/", views.save_desc, name="save_desc"),
 ]

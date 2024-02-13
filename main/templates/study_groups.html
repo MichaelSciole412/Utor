@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}Study Groups{% endblock %}
+
+{% block content %}
+<div class="outer">
+  <div class="sidebyside">
+    <div class="innersidebyside">
+      <div class="center text-center">
+        <h3>My Study Groups</h3>
+      </div>
+      <div class="grouplist">
+      {% if my_groups %}
+        {% for group in my_groups %}
+        <a href="{% url 'view_group' group.id %}" class="biglink">
+        <div class="cardlist">
+          <h4>{{ group.name }}</h4>
+          <div style="display: flex; flex-direction: horizontal;">
+            <div style="width: 80%;">
+              <p><strong>Subject: </strong>{{ group.subject }}</p>
+            </div>
+            <div style="width: 20%; text-align: right; margin-right: 20px;">
+              {% if group.course %}
+              <p>{{ group.course }}</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        </a>
+        {% endfor %}
+      {% else %}
+      <div style="margin: 10px;">
+        <p>You don't belong to any study groups :(</p>
+      </div>
+      {% endif %}
+      </div>
+      <div style="margin: 10px;">
+        <a href="{% url 'create_study_group' %}">Create a Study Group</a>
+      </div>
+    </div>
+    <div class="innersidebyside">
+      <div class="center text-center">
+        <h3>Study Groups</h3>
+      </div>
+      <div style="margin-bottom: 5px;">
+        <form style="width: 97%; margin: auto;" class="miniform" action="{% url 'study_groups' %}" method="POST">
+          {% csrf_token %}
+          <input class="text-input" type="text" name="search" placeholder="Search study groups by name, subject, course number, or owner" required />
+          <input class="submit-button" type="submit" value="Search" />
+        </form>
+      </div>
+      <div class="grouplist">
+      {% if rec_groups %}
+        {% for group in rec_groups %}
+        <a href="{% url 'view_group' group.id %}" class="biglink">
+        <div class="cardlist">
+          <h4>{{ group.name }}</h4>
+          <div style="display: flex; flex-direction: horizontal;">
+            <div style="width: 80%;">
+              <p><strong>Subject: </strong>{{ group.subject }}</p>
+            </div>
+            <div style="width: 20%; text-align: right; margin-right: 20px;">
+              {% if group.course %}
+              <p>{{ group.course }}</p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        </a>
+        {% endfor %}
+      {% else %}
+      <div style="margin: 10px;">
+        <p>No study groups relevant to the subjects you are currently studying found</p>
+      </div>
+      {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

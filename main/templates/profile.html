@@ -32,7 +32,7 @@
             <div class="list">
               <form class="miniform" action="{% url 'profile' user.username %}" method="POST">
                 {% csrf_token %}
-                <input class="text-input" type="text" name="new_subject" required />
+                <input class="text-input" type="text" name="new_subject" required maxlength="50"/>
                 <input class="submit-button" type="submit" value="Add Subject" />
               </form>
             </div>

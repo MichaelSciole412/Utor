@@ -32,7 +32,8 @@ ALLOWED_HOSTS = []
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_HOST_USER = "utor.service@gmail.com"
-EMAIL_HOST_PASSWORD = "jjrs powt dlap ewtw"
+with open("./main/secrets/gmail_password.txt") as f:
+    EMAIL_HOST_PASSWORD = f.read()
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False

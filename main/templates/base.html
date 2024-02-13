@@ -8,13 +8,14 @@
 
     <link href="{% static 'main/style.css' %}" rel="stylesheet" />
     <title>{% block title %}{% endblock title %}</title>
+
   </head>
   <body>
   {% if request.user.is_authenticated %}
   <nav class="navbar">
     <ul>
       <li style="margin-left: 20px;"><a href="{% url 'index' %}">Home</a></li>
-      <li><a href="#">Test 2</a></li>
+      <li><a href="{% url 'study_groups' %}">Study Groups</a></li>
       <li><a href="#">Test 3</a></li>
       <li><a href="#">Test 4</a></li>
       <li style="float: right; margin-right: 20px;"><a href="{% url 'logout' %}">Logout</a></li>
@@ -28,5 +29,6 @@
 
 
   {% endblock content %}
+  {% block script %}{% endblock script %}
   </body>
 </html>
