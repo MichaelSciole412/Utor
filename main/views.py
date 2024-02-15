@@ -91,4 +91,57 @@ def profile(request, username=""):
         if request.POST.get("remove_subject") is not None:
             usr.remove_student_subject(request.POST.get("remove_subject"))
             return redirect(reverse("profile", kwargs={"username": username}))
+        if request.POST.get("new_tutor_subject") is not None:
+            usr.add_tutor_subject(request.POST.get("new_tutor_subject"))
+            return redirect(reverse("profile", kwargs={"username": username}))
+        if request.POST.get("remove_tutor_subject") is not None:
+            usr.remove_tutor_subject(request.POST.get("remove_tutor_subject"))
+            return redirect(reverse("profile", kwargs={"username": username}))
+        if request.POST.get("tutoring_rate") is not None:
+            usr.tutoring_pay = request.POST.get("tutoring_rate")
+            usr.save()
+            return redirect(reverse("profile", kwargs={"username": username}))
+        if request.POST.get("zip_code") is not None:
+            usr.zip_code = request.POST.get("zip_code")
+            usr.save()
+            return redirect(reverse("profile", kwargs={"username": username}))
+        if request.POST.get("bio") is not None:
+            usr.bio = request.POST.get("bio")
+            usr.save()
+            return redirect(reverse("profile", kwargs={"username": username}))
     return render(request, "profile.html", context={"user": usr, "current_user": current_user})
+
+@ensure_authenticated
+def enable_tutoring(request, username=""):
+    usr = get_object_or_404(User, username=username)
+    
+    if request.method == "POST" and usr.username == request.user.username:
+        if usr.tutoring_enabled == False:
+            usr.tutoring_enabled = True
+            usr.save()
+        else:
+            usr.tutoring_enabled = False
+            usr.save()
+    return redirect(reverse("profile", kwargs={"username": username}))
+
+@ensure_authenticated
+def tutor_search(request):
+	query = request.GET.get('subject', '')
+ 
+	filter_type = request.GET.get('filter-type', 'no-filter')
+	filter_query = request.GET.get('filter-query', '')
+	
+	tutors = User.objects.filter(tutor_subjects__icontains=query, tutoring_enabled = True)
+
+	if filter_type == 'username' and filter_query:
+		partials = tutors.filter(username__icontains=filter_query)
+		tutors = tutors.filter(username__iexact=filter_query).union(partials).order_by('username')
+	elif filter_type == 'zip-code':
+		tutors = tutors.filter(tutor_zipcode__icontains=filter_query)
+	
+	
+	return render(request, 'tutor_search.html', {'tutors': tutors, 'query': query, 'filter_type': filter_type, 'filter_query': filter_query})
+
+
+
+

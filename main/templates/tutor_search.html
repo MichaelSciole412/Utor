@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="outer">
+	<div class="form smallform">
+		<form action="{% url 'tutor_search' %}" method="get">
+			<label for="subject">Search for Tutors:</label>
+			<input type="text" name="subject" id="subject" required>
+
+			<label for="filter-type">Filter by:</label>
+			<select name="filter-type" id="filter-type">
+				<option value="no-filter">No Filter</option>
+				<option value="username">Username</option>
+				<option value="zip-code">Zip Code</option>
+			</select>
+			<input type="text" name="filter-query" id="filter-query">
+
+			<button type="submit">Search</button>
+		</form>
+
+		
+
+		<h2>Search Results for "{{ query }}"</h2>
+
+		{% if tutors %}
+			<table class="table">
+				<thead>
+					<tr style="text-align: center;">
+						<th>Username</th>
+						<th>Tutoring Subjects</th>
+						<th>Zip Code</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for tutor in tutors %}
+						<tr style="text-align: center;">
+							<td>{{ tutor.username }}</td>
+							<td>{{ tutor.tutor_subjects }}</td>
+							<td>{{ tutor.zip_code}}</td>
+							<td>
+								<button>Message</button>
+							</td>
+						</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		{% else %}
+			<p>No tutors found for "{{ query }}"</p>
+		{% endif %}
+	</div>
+</div>
+{% endblock %}

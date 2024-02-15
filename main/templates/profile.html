@@ -3,43 +3,152 @@
 {% block title %}{{ user.username }}'s Profile{% endblock %}
 
 {% block content %}
+
 <div class="outer">
   <div class="maindiv">
     <div class="center text-center">
       <h1>{{ user.username }}'s Profile</h1>
     </div>
-    <table>
-      <tr>
-        <th>University</th>
-        <td>{{ user.university.name }}</td>
-      </tr>
-      <tr>
-        <th valign=top>Currently Studying</th>
-        <td>
-          {% for subject in user.get_student_subjects %}
-            <div class="list">
-              <div style="width: 90%;">{{ subject }}</div>
-              {% if current_user %}
-              <form action="{% url 'profile' user.username %}" method="POST">
-                {% csrf_token %}
-                <input type="hidden" name="remove_subject" value="{{ subject }}" />
-                <input style="float: right;" class="submit-button" type="submit" value="Remove Subject">
-              </form>
-              {% endif %}
-            </div>
-          {% endfor %}
-          {% if current_user %}
-            <div class="list">
-              <form class="miniform" action="{% url 'profile' user.username %}" method="POST">
-                {% csrf_token %}
-                <input class="text-input" type="text" name="new_subject" required />
-                <input class="submit-button" type="submit" value="Add Subject" />
-              </form>
-            </div>
-          {% endif %}
-        </td>
-      </tr>
-    </table>
+
+	<div class="maindiv">
+		<table>
+		<tr>
+			<th>University</th>
+			<td>{{ user.university.name }}</td>
+		</tr>
+		<tr> 
+			<th>Bio</th>
+			<td class = "list">
+				{% if current_user %}
+					<form action="{% url 'profile' user.username %}" method="POST">
+						{% csrf_token %}
+						<textarea name="bio" rows="8" cols="65">{{user.bio}}</textarea>
+						<input style="float: right;" class="submit-button" type="submit" value="Save">
+					</form>
+				{% endif %}
+			</td>
+		<tr>
+			<th valign=top>Currently Studying</th>
+			<td>
+			{% for subject in user.get_student_subjects %}
+				<div class="list">
+					<div style="width: 90%;">{{ subject }}</div>
+					{% if current_user %}
+						<form action="{% url 'profile' user.username %}" method="POST">
+							{% csrf_token %}
+							<input type="hidden" name="remove_subject" value="{{ subject }}" />
+							<input style="float: right;" class="submit-button" type="submit" value="Remove Subject">
+						</form>
+					{% endif %}
+				</div>
+			{% endfor %}
+			{% if current_user %}
+				<div class="list">
+					<form class="miniform" action="{% url 'profile' user.username %}" method="POST">
+						{% csrf_token %}
+						<input class="text-input" type="text" name="new_subject" required />
+						<input class="submit-button" type="submit" value="Add Subject" />
+					</form>
+				</div>
+			{% endif %}
+			</td>
+		</tr>
+		</table>
+	</div>
+
+	<div class="{% if user.tutoring_enabled %}maindiv{% else %}hidden{% endif %}" name="tutoring-section">
+		<table>
+			<tr>
+				<th valign=top>Currently Tutoring</th>
+				<td>
+				{% for subject in user.get_tutor_subjects %}
+					<div class="list">
+						<div style="width: 90%;">{{ subject }}</div>
+						{% if current_user %}
+							<form action="{% url 'profile' user.username %}" method="POST">
+								{% csrf_token %}
+								<input type="hidden" name="remove_tutor_subject" value="{{ subject }}" />
+								<input style="float: right;" class="submit-button" type="submit" value="Remove Subject">
+							</form>
+						{% endif %}
+					</div>
+				{% endfor %}
+				{% if current_user %}
+					<div class="list">
+						<form class="miniform" action="{% url 'profile' user.username %}" method="POST">
+							{% csrf_token %}
+							<input class="text-input" type="text" name="new_tutor_subject" required />
+							<input class="submit-button" type="submit" value="Add Subject" />
+						</form>
+					</div>
+				{% endif %}
+				</td>
+			</tr>
+
+			<tr>
+				<th valign=top>Enter Zip Code</th>
+				<td>
+					<div class="list">
+						<div style="width: 100%;">
+							<form class="miniform" method="post" action="{% url 'profile' user.username %}">
+								{% csrf_token %}
+								<input class="text-input" type="text" id="zip_code" name="zip_code" step="0.01">
+								<input class="submit-button" type="submit" value="Update Zip Code"/>
+							</form>
+						</div>
+					</div>
+				</td>
+			</tr>
+
+			<tr>
+				<td colspan="2" class="text-center">
+					{% if user.tutoring_pay %}
+						<p>Current Zip Code: {{ user.zip_code }}</p>
+					{% else %}
+						<p>Default Zip Code: {{ user.zip_code }}</p>
+					{% endif %}
+				</td>
+			</tr>
+
+			<tr>
+				<th valign=top>Tutoring Rate (Optional)</th>
+				<td>
+					<div class="list">
+						<div style="width: 100%;">
+							<form class="miniform" method="post" action="{% url 'profile' user.username %}">
+								{% csrf_token %}
+								<input class="text-input" type="text" id="tutoring_rate" name="tutoring_rate" step="0.01">
+								<input class="submit-button" type="submit" value="Create Rate"/>
+							</form>
+						</div>
+					</div>
+				</td>
+			</tr>
+		
+			<tr>
+				<td colspan="2" class="text-center">
+					{% if user.tutoring_pay %}
+						<p>User's Tutoring Rate: ${{ user.tutoring_pay }}</p>
+					{% else %}
+						<p>User has not set a tutoring rate yet.</p>
+					{% endif %}
+				</td>
+			</tr>
+		</table>
+	</div>
+
+	<form method="post" action="{% url 'enable_tutoring' user.username %}">
+		{% csrf_token %}
+		<button type="submit">Enable Tutoring</button>
+	</form>
+
+	{% if user.tutoring_enabled %}
+		<p>Tutoring Enabled! You will show up in tutoring searches.</p>
+	{% else %}
+		<p>Tutoring Disabled! You will be hidden in tutoring searches.</p>
+	{% endif %}
+
   </div>
 </div>
+
 {% endblock %}

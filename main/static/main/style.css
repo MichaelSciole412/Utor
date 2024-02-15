@@ -23,6 +23,10 @@ body {
   padding: 30px;
 }
 
+.hidden {
+    display: none;
+}
+
 /* NAVBAR */
 
 .navbar ul {
@@ -56,7 +60,7 @@ body {
 }
 
 .form-table th {
-  text-align: left;
+  text-align: center;
 }
 
 .form-table td,th {
@@ -93,6 +97,11 @@ form div {
 }
 
 /* MISC */
+.tutor-table th{
+	width: 25%;
+}
+
+
 
 .text-input {
   width: 100%;

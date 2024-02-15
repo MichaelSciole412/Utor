@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import include, path
 from . import views
 
 urlpatterns = [
@@ -9,4 +9,7 @@ urlpatterns = [
 	path("create_account/", views.create_account, name="create_account"),
 	path("verify_account/<str:email_key>/", views.verify_account, name="verify_account"),
 	path("profile/<str:username>/", views.profile, name="profile"),
+	path('tutor_search/', views.tutor_search, name='tutor_search'),
+	path('enable_tutoring/<str:username>/', views.enable_tutoring, name='enable_tutoring'),
 ]
+
