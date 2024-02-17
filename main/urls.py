@@ -11,5 +11,9 @@ urlpatterns = [
 	path("profile/<str:username>/", views.profile, name="profile"),
 	path('tutor_search/', views.tutor_search, name='tutor_search'),
 	path('enable_tutoring/<str:username>/', views.enable_tutoring, name='enable_tutoring'),
+	path("groups/", views.study_groups, name="study_groups"),
+	path("groups/create_study_group/", views.create_study_group, name="create_study_group"),
+	path("groups/view_group/<int:group_id>/", views.view_group, name="view_group"),
+	path("ajax/save_desc/<int:group_id>/", views.save_desc, name="save_desc"),
 ]
 

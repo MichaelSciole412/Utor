@@ -23,8 +23,19 @@ body {
   padding: 30px;
 }
 
+
 .hidden {
     display: none;
+}
+
+.sidebyside {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  margin: auto;
+  background: #BBD;
+  border-radius: 50px;
+  padding: 30px;
 }
 
 /* NAVBAR */
@@ -96,6 +107,14 @@ form div {
   width: 100%;
 }
 
+.fullwidth-text-input input[type="text"] {
+  width: 98%;
+}
+
+.fullwidth-text-input input[name="course"] {
+  width: 30%;
+}
+
 /* MISC */
 .tutor-table th{
 	width: 25%;
@@ -111,11 +130,35 @@ form div {
   padding: 5px;
 }
 
+.grouplist {
+  display: flex;
+  flex-direction: column;
+}
+
+.cardlist {
+  width: 95%;
+  background: #FFF;
+  padding: 10px;
+  border-radius: 8px;
+  margin: auto;
+  margin-top: 2px;
+}
+
 .list {
   width: 50%;
   background: #FFF;
   padding: 10px;
   border-radius: 8px;
+  margin: 2px;
+  display: flex;
+  flex-direction: horizontal;
+}
+
+.list2 {
+  width: 90%;
+  background: #FFF;
+  padding: 5px;
+  border-radius: 4px;
   margin: 2px;
   display: flex;
   flex-direction: horizontal;
@@ -136,4 +179,41 @@ form div {
   padding: 15px;
   border-radius: 8px;
   width: 95%;
+}
+
+.innersidebyside {
+  flex: 1;
+  padding: 10px;
+  background: #DDF;
+  border-radius: 10px;
+  margin: 1px;
+  max-width: 50%;
+}
+
+textarea {
+  resize: vertical;
+}
+
+.biglink {
+  text-decoration: none;
+  color: inherit;
+}
+
+.biglink .cardlist:hover {
+  background: #EEE;
+  transition: all 0.2s;
+}
+
+.userlink {
+  text-decoration: none;
+}
+
+#desc_textarea {
+  width: 100%;
+}
+
+#desc_text {
+  word-break: break-word;
+  white-space: normal;
+  width: 100%;
 }

@@ -49,3 +49,9 @@ class AccountForm(forms.Form):
         if password != confirm_password:
             raise ValidationError("Passwords don't match")
         return cleaned_data
+
+class StudyGroupForm(forms.Form):
+    group_name = forms.CharField(label="Study Group Name", max_length=50, validators=[RegexValidator(regex="^\S.{4,}$", message="Group name must be at least 5 characters")])
+    subject = forms.CharField(label="Subject", max_length=50, validators=[RegexValidator(regex="^\S.*$", message="Subject must not be blank")])
+    course = forms.CharField(label="Course Prefix and Number (optional)", required=False, validators=[RegexValidator(regex="^[A-Za-z_]{2,3} \d{1,5}$", message="Invalid course prefix and number")])
+    description = forms.CharField(label="Description", widget=forms.Textarea(attrs={"rows": "5"}))
