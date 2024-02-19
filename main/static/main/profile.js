@@ -24,6 +24,215 @@ function unescapeHTML(text){
 }
 
 
+
+
+
+document.addEventListener("DOMContentLoaded", function(){
+	const subjectList = document.getElementById("subject_list");
+	subjectList.addEventListener("click", function (event) {
+		if (event.target && event.target.classList.contains("rm-sub-button")) {
+			const subjectToRemove = event.target.dataset.subject;
+			removeSubject(subjectToRemove, user);
+		}
+	});
+
+	const addSubjectButton = document.querySelector(".add-sub-button");
+	if(addSubjectButton)
+	{
+		addSubjectButton.addEventListener("click", function(){
+			newSubject = document.getElementById("new_subject").value.trim();
+			const loop = "{{ forloop.counter }}";
+			addSubject(newSubject, user, loop);
+		});
+	}
+
+	function removeSubject(subject, user)
+	{
+		console.log("Inside removeSubject");
+		req = new XMLHttpRequest();
+		req.open("POST", `/ajax/remove_subject/${user}/`);
+		req.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+		req.onload = function(){
+			if (req.status == 200)
+			{
+				const data = JSON.parse(req.responseText);
+				if (data.status === "CONFIRM")
+				{
+					
+					const subjectElement = document.querySelector(`[data-subject="${subject}"]`).closest(".list");
+					console.log("subject to remove", subject);
+					if (subjectElement) 
+					{
+                        subjectElement.remove();
+						console.log("subject removed");
+                    }
+					else
+					{
+						console.error("Failed to remove subject");
+					}
+				}
+				else
+				{
+					console.error("Failed to remove subject");
+				}
+			}
+		};
+
+		req.send(JSON.stringify({ "subject": subject }));
+	}
+
+
+
+	function addSubject(newSubject, user, loop)
+	{
+		req = new XMLHttpRequest();
+		req.open("POST", `/ajax/add_subject/${user}/`);
+		req.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+		req.onload = function(){
+			if (req.status == 200)
+			{
+				const data = JSON.parse(req.responseText);
+				if (data.status === "CONFIRM")
+				{
+					let newHtml = `<div class="list" id="subject_${loop}">
+										<div style="width: 90%;">${newSubject}</div>`;
+
+					if (user) {
+						newHtml += `<button id="rm-sub-button" class="rm-sub-button" data-subject="${newSubject}">Remove Subject</button>`;
+					}
+
+					newHtml += `</div>`;
+					const listContainer = document.getElementById("add_button");
+
+					if (listContainer) 
+					{
+                        listContainer.insertAdjacentHTML("beforebegin", newHtml);
+                        document.getElementById("new_subject").value = "";
+                    }
+				}
+				else
+				{
+					console.error("Failed to add subject");
+				}
+			}
+			else
+			{
+				console.error("Failed to add subject");
+			}
+		};
+		req.send(JSON.stringify({ "new_subject": newSubject }));
+	}
+});
+
+/*
+document.addEventListener("DOMContentLoaded", function(){
+	const tutoringList = document.getElementById("tutoring_list");
+	tutoringList.addEventListener("click", function (event) {
+		if (event.target && event.target.classList.contains("rm-tut-button")) {
+			const tutoringToRemove = event.target.dataset.subject;
+			removeTutoring(tutoringToRemove, user);
+		}
+	});
+
+	const addTutoringButton = document.querySelector(".add-tut-button");
+	if(addTutoringButton)
+	{
+		addTutoringButton.addEventListener("click", function(){
+			newTutoring = document.getElementById("new_tutoring").value.trim();
+			const loop = "{{ forloop.counter }}";
+			addTutoring(newTutoring, user, loop);
+		});
+	}
+
+	function removeTutoring(subject, user)
+	{
+		console.log("Inside removeTutoring");
+		req = new XMLHttpRequest();
+		req.open("POST", `/ajax/remove_tutoring/${user}/`);
+		req.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+		req.onload = function(){
+			if (req.status == 200)
+			{
+				const data = JSON.parse(req.responseText);
+				if (data.status === "CONFIRM")
+				{
+					
+					const subjectElement = document.querySelector(`[data-subject="${tutoring}"]`).closest(".list");
+					console.log("subject to remove", subject);
+					if (subjectElement) 
+					{
+                        subjectElement.remove();
+						console.log("subject removed");
+                    }
+					else
+					{
+						console.error("Failed to remove subject");
+					}
+				}
+				else
+				{
+					console.error("Failed to remove subject");
+				}
+			}
+		};
+
+		req.send(JSON.stringify({ "subject": subject }));
+	}
+
+
+
+	function addTutoring(newTutoring, user, loop)
+	{
+		console.log("Adding subject:", newTutoring);
+		req = new XMLHttpRequest();
+		req.open("POST", `/ajax/add_tutoring/${user}/`);
+		req.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+		req.onload = function(){
+			console.log("Response:", req.responseText);
+			if (req.status == 200)
+			{
+				const data = JSON.parse(req.responseText);
+				if (data.status === "CONFIRM")
+				{
+					let newHtml = `<div class="list" id="subject_${loop}">
+										<div style="width: 90%;">${newTutoring}</div>`;
+
+					if (user) {
+						console.log("Username recognized");
+						newHtml += `<button id="rm-sub-button" class="rm-sub-button" data-subject="${newTutoring}">Remove Subject</button>`;
+					}
+
+					newHtml += `</div>`;
+					const listContainer = document.getElementById("tut_button");
+
+					if (listContainer) 
+					{
+                        listContainer.insertAdjacentHTML("beforebegin", newHtml);
+                        document.getElementById("new_subject").value = "";
+                    }
+				}
+				else
+				{
+					console.error("Failed to add subject");
+				}
+			}
+			else
+			{
+				console.error("Failed to add subject");
+			}
+		};
+		req.send(JSON.stringify({ "new_subject": newSubject }));
+	}
+});
+
+*/
+
+
+
 function editBio(){
 	console.log("editBio function called");
 	b2 = document.getElementById("b2");

@@ -18,5 +18,10 @@ urlpatterns = [
 	path("ajax/save_bio/<str:username>/", views.save_bio, name="save_bio"),
 	path("ajax/save_zip/<str:username>/", views.save_zip, name="save_zip"),
 	path("ajax/save_pay/<str:username>/", views.save_pay, name="save_pay"),
+ 	path("ajax/add_subject/<str:username>/", views.add_subject, name="add_subject"),
+	path("ajax/remove_subject/<str:username>/", views.remove_subject, name="remove_subject"),
+	path("ajax/add_tutoring/<str:username>/", views.add_tutoring, name="add_tutoring"),
+	path("ajax/remove_tutoring/<str:username>/", views.remove_tutoring, name="remove_tutoring")
+
 ]
 

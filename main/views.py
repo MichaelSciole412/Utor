@@ -1,4 +1,4 @@
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, Http404
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, Http404, JsonResponse
 from django.template import loader
 from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
@@ -81,11 +81,12 @@ def verify_account(request, email_key=""):
         usr.save()
         return render(request, "verify_account.html", context={"username": usr.username})
 
+
 @ensure_authenticated
 def profile(request, username=""):
     usr = get_object_or_404(User, username=username)
     current_user = usr.username == request.user.username
-    if request.method == "POST" and current_user:
+    '''if request.method == "POST" and current_user:
         if request.POST.get("new_subject") is not None:
             usr.add_student_subject(request.POST.get("new_subject"))
             return redirect(reverse("profile", kwargs={"username": username}))
@@ -97,21 +98,6 @@ def profile(request, username=""):
             return redirect(reverse("profile", kwargs={"username": username}))
         if request.POST.get("remove_tutor_subject") is not None:
             usr.remove_tutor_subject(request.POST.get("remove_tutor_subject"))
-            return redirect(reverse("profile", kwargs={"username": username}))
-    '''
-        if request.POST.get("tutoring_rate") is not None:
-            usr.tutoring_pay = request.POST.get("tutoring_rate")
-            usr.save()
-            return redirect(reverse("profile", kwargs={"username": username}))
-        
-      if request.POST.get("zip_code") is not None:
-            usr.zip_code = request.POST.get("zip_code")
-            usr.save()
-            return redirect(reverse("profile", kwargs={"username": username}))
-        
-        if request.POST.get("bio") is not None:
-            usr.bio = request.POST.get("bio")
-            usr.save()
             return redirect(reverse("profile", kwargs={"username": username}))'''
             
     return render(request, "profile.html", context={"user": usr, "current_user": current_user})
@@ -237,3 +223,59 @@ def save_pay(request, username=""):
             return HttpResponse("Pay rate saved successfully")
     
     return HttpResponseBadRequest("invalid Pay Rate")
+
+
+@csrf_exempt
+@ensure_authenticated
+def add_subject(request, username=""):
+    if request.method == "POST":
+        request_data = json.loads(request.body)
+        usr = get_object_or_404(User, username=username)
+        if usr.username == request.user.username:
+            new_subject = request_data.get("new_subject")
+            if new_subject:
+                usr.add_student_subject(new_subject)
+                return JsonResponse({"status": "CONFIRM"})
+    return JsonResponse({"error": "Invalid Request"}, status=400)
+
+
+@csrf_exempt
+@ensure_authenticated
+def remove_subject(request, username=""):
+    if request.method == "POST":
+        request_data = json.loads(request.body)
+        usr = get_object_or_404(User, username=username)
+        if usr.username == request.user.username:
+            subject_to_rm = request_data.get("subject")
+            if subject_to_rm:
+                usr.remove_student_subject(subject_to_rm)
+                return JsonResponse({"status": "CONFIRM"})
+    return JsonResponse({"error": "Invalid Request"}, status=400)
+
+
+@csrf_exempt
+@ensure_authenticated
+def add_tutoring(request, username=""):
+    if request.method == "POST":
+        request_data = json.loads(request.body)
+        usr = get_object_or_404(User, username=username)
+        if usr.username == request.user.username:
+            new_tutoring = request_data.get("new_subject")
+            if new_tutoring:
+                usr.add_tutor_subject(new_tutoring)
+                return JsonResponse({"status": "CONFIRM"})
+    return JsonResponse({"error": "Invalid Request"}, status=400)
+
+
+@csrf_exempt
+@ensure_authenticated
+def remove_tutoring(request, username=""):
+    if request.method == "POST":
+        request_data = json.loads(request.body)
+        usr = get_object_or_404(User, username=username)
+        if usr.username == request.user.username:
+            tutoring_to_rm = request_data.get("tutoring")
+            if tutoring_to_rm:
+                usr.remove_tutor_subject(tutoring_to_rm)
+                return JsonResponse({"status": "CONFIRM"})
+    return JsonResponse({"error": "Invalid Request"}, status=400)
