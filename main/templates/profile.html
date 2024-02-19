@@ -1,8 +1,11 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}{{ user.username }}'s Profile{% endblock %}
 
 {% block content %}
+
+
 
 <div class="outer">
   <div class="maindiv">
@@ -19,13 +22,12 @@
 		<tr> 
 			<th>Bio</th>
 			<td class = "list">
-				{% if current_user %}
-					<form action="{% url 'profile' user.username %}" method="POST">
-						{% csrf_token %}
-						<textarea name="bio" rows="8" cols="65">{{user.bio}}</textarea>
-						<input style="float: right;" class="submit-button" type="submit" value="Save">
-					</form>
-				{% endif %}
+				<div id="bio">
+					<p id="bio_text">{{ user.bio }}</p>
+					{% if current_user %}
+					<button class="submit-button" id="b2" onclick="editBio();">Edit Bio</button>
+					{% endif %}
+				</div>
 			</td>
 		<tr>
 			<th valign=top>Currently Studying</th>
@@ -90,10 +92,8 @@
 				<td>
 					<div class="list">
 						<div style="width: 100%;">
-							<form class="miniform" method="post" action="{% url 'profile' user.username %}">
-								{% csrf_token %}
 								<input class="text-input" type="text" id="zip_code" name="zip_code" step="0.01">
-								<input class="submit-button" type="submit" value="Update Zip Code"/>
+								<button class="submit-button" id="zip_button" onclick="saveZip();">Save</button>
 							</form>
 						</div>
 					</div>
@@ -103,9 +103,9 @@
 			<tr>
 				<td colspan="2" class="text-center">
 					{% if user.tutoring_pay %}
-						<p>Current Zip Code: {{ user.zip_code }}</p>
+						<p>Current Zip Code: <span id="zip_code_display">{{ user.zip_code }}</span></p>
 					{% else %}
-						<p>Default Zip Code: {{ user.zip_code }}</p>
+						<p>Default Zip Code: <span id="zip_code_display">{{ user.zip_code }}</span></p>
 					{% endif %}
 				</td>
 			</tr>
@@ -115,10 +115,8 @@
 				<td>
 					<div class="list">
 						<div style="width: 100%;">
-							<form class="miniform" method="post" action="{% url 'profile' user.username %}">
-								{% csrf_token %}
 								<input class="text-input" type="text" id="tutoring_rate" name="tutoring_rate" step="0.01">
-								<input class="submit-button" type="submit" value="Create Rate"/>
+								<button class="submit-button" id="pay_button" onclick="savePay();">Create Rate</button>
 							</form>
 						</div>
 					</div>
@@ -128,7 +126,7 @@
 			<tr>
 				<td colspan="2" class="text-center">
 					{% if user.tutoring_pay %}
-						<p>User's Tutoring Rate: ${{ user.tutoring_pay }}</p>
+						<p>User's Tutoring Rate: $<span id="pay_display">{{ user.tutoring_pay }}</span></p>
 					{% else %}
 						<p>User has not set a tutoring rate yet.</p>
 					{% endif %}
@@ -150,5 +148,10 @@
 
   </div>
 </div>
-
 {% endblock %}
+
+{% block script %}<script src="{% static 'main/profile.js' %}"
+                          defer
+                          data-username="{{ user.username }}" 
+						  data-zip="{{user.zip_code}}"
+						  data-pay="{{user.tutoring_pay}}"></script>{% endblock %}

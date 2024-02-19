@@ -15,5 +15,8 @@ urlpatterns = [
 	path("groups/create_study_group/", views.create_study_group, name="create_study_group"),
 	path("groups/view_group/<int:group_id>/", views.view_group, name="view_group"),
 	path("ajax/save_desc/<int:group_id>/", views.save_desc, name="save_desc"),
+	path("ajax/save_bio/<str:username>/", views.save_bio, name="save_bio"),
+	path("ajax/save_zip/<str:username>/", views.save_zip, name="save_zip"),
+	path("ajax/save_pay/<str:username>/", views.save_pay, name="save_pay"),
 ]
 
