@@ -55,3 +55,77 @@ function saveDesc(){
   b1.innerHTML = "Edit Description";
   b1.setAttribute("onclick", "editDesc();");
 }
+
+function requestJoin(id){
+  btn = document.getElementById("joinbutton");
+  btn.classList.add("clickedbutton");
+  btn.classList.remove("anchorbutton");
+  btn.innerHTML = "Request Sent";
+  btn.removeAttribute("onclick");
+
+  req = new XMLHttpRequest();
+  req.open("POST", `/ajax/request_join/${groupid}/`);
+  req.send();
+}
+
+function reject(id){
+  parentdiv = document.getElementById("requestlist");
+  requestdiv = document.getElementById(`request${id}`);
+  parentdiv.removeChild(requestdiv);
+
+  num_requests = document.getElementById("num_requests");
+  num_requests_int = parseInt(num_requests.innerHTML) - 1
+  num_requests.innerHTML = num_requests_int
+  if (num_requests_int == 0){
+    none_div = document.createElement("template");
+    none_div.innerHTML = `<div class="list2" id="request{{ usr.id }}">
+                          <div style="width: 90%; padding: 7px; margin-left: 10px;">None</div>
+                          </div>`;
+    none_div = none_div.content.children[0];
+    parentdiv.appendChild(none_div);
+  }
+
+  req = new XMLHttpRequest();
+  req.open("POST", `/ajax/reject_request/${groupid}/${id}/`);
+  req.send();
+}
+
+function accept(id, username){
+  parentdiv = document.getElementById("requestlist");
+  requestdiv = document.getElementById(`request${id}`);
+  parentdiv.removeChild(requestdiv);
+
+  num_requests = document.getElementById("num_requests");
+  num_requests_int = parseInt(num_requests.innerHTML) - 1
+  num_requests.innerHTML = num_requests_int
+  if (num_requests_int == 0){
+    none_div = document.createElement("template");
+    none_div.innerHTML = `<div class="list2">
+                            <div style="width: 90%; padding: 7px; margin-left: 10px;">None</div>
+                          </div>`;
+    none_div = none_div.content.children[0];
+    parentdiv.appendChild(none_div);
+  }
+
+  userlist_div = document.getElementById("userlist");
+  new_user_div = document.createElement("template");
+  new_user_div.innerHTML = `<div class="list2">
+                            <div style="width: 90%; padding: 7px; margin-left: 10px;"><a href='/profile/${id}' class="userlink">${username}</a></div>
+                            <button onclick="kick(${id})" style="min-width: 80px;">Kick User</button>
+                            </div>`
+  new_user_div = new_user_div.content.children[0];
+  userlist_div.appendChild(new_user_div);
+
+  req = new XMLHttpRequest();
+  req.open("POST", `/ajax/accept_request/${groupid}/${id}/`);
+  req.send();
+}
+
+function leave(){
+  if (confirm("Are you sure you want to leave this Study Group?")){
+    req = new XMLHttpRequest();
+    req.open("POST", `/ajax/leave_group/${groupid}/`);
+    req.send();
+    location.reload();
+  }
+}

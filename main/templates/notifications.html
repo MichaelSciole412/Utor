@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Notifications{% endblock %}
+
+
+
+{% block content %}
+<div class="outer">
+  <div class="maindiv">
+    <div class="center text-center">
+      <h3>Notifications</h3>
+    </div>
+    <div id="notificationlist" class="grouplist notifications">
+      {% if notifications %}
+        {% for notif in notifications %}
+          <div id="notification{{ notif.id }}" style="padding-right: 0px;" class="cardlist2 flexrow">
+            <div style="width:98%;">
+              <div class="flexrow center">
+                <div style="width: 82%;">
+                  <h3>{{ notif.title }}</h3>
+                </div>
+                <div style="text-align: right; font-size: 11px; color: gray; margin-right: 10px; margin-top: 4px;">{{ notif.time|date:"n/j/y g:i" }}&nbsp;{{ notif.time|date:"A" }}</div>
+                <div style="text-align: right;">
+                  <button class="xbutton" onclick="removeNotification({{ notif.id }});"><img src="{% static 'main/X_button.png' %}" width=20px/></button>
+                </div>
+              </div>
+              <div style="width: 85%;">
+              <p>{{ notif.text }}</p>
+              {% if notif.n_type == "group" %}
+                <p><a href="{% url 'view_group' notif.regarding_group.id %}">{{ notif.regarding_group.name }}</a></p>
+              {% endif %}
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+      <div class="cardlist2 flexrow">
+        <p>No new notifications</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}<script src="{% static 'main/notifications.js' %}"></script>{% endblock %}

@@ -37,6 +37,8 @@ class AccountForm(forms.Form):
             raise ValidationError("Username already in use")
         if not username or not re.match("^[a-zA-Z0-9\-_]+$", username):
             raise ValidationError("Username must contain only letters, numbers, underscores, and dashes")
+        if not re.match("^.*[a-zA-Z].*$", username):
+            raise ValidationError("Username must contain at least one letter")
         if len(username) > 50:
             raise ValidationError("Username must be less than or equal to 50 characters")
         return username
