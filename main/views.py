@@ -1,4 +1,4 @@
-from django.http import HttpResponse, HttpResponseRedirect, Http404
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, Http404, JsonResponse
 from django.template import loader
 from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
@@ -81,6 +81,7 @@ def verify_account(request, email_key=""):
         usr.save()
         return render(request, "verify_account.html", context={"username": usr.username})
 
+
 @ensure_authenticated
 def profile_by_id(request, user_id):
     usr = get_object_or_404(User, pk=user_id)
@@ -90,16 +91,50 @@ def profile_by_id(request, user_id):
 def profile(request, username):
     usr = get_object_or_404(User, username=username)
     current_user = usr.username == request.user.username
-    if request.method == "POST" and current_user:
+    '''if request.method == "POST" and current_user:
         if request.POST.get("new_subject") is not None:
             usr.add_student_subject(request.POST.get("new_subject"))
             return redirect(reverse("profile", kwargs={"username": username}))
         if request.POST.get("remove_subject") is not None:
             usr.remove_student_subject(request.POST.get("remove_subject"))
             return redirect(reverse("profile", kwargs={"username": username}))
+        if request.POST.get("new_tutor_subject") is not None:
+            usr.add_tutor_subject(request.POST.get("new_tutor_subject"))
+            return redirect(reverse("profile", kwargs={"username": username}))
+        if request.POST.get("remove_tutor_subject") is not None:
+            usr.remove_tutor_subject(request.POST.get("remove_tutor_subject"))
+            return redirect(reverse("profile", kwargs={"username": username}))'''
+            
     return render(request, "profile.html", context={"user": usr, "current_user": current_user})
 
 @ensure_authenticated
+def enable_tutoring(request, username=""):
+    usr = get_object_or_404(User, username=username)
+    
+    if request.method == "POST" and usr.username == request.user.username:
+        if usr.tutoring_enabled == False:
+            usr.tutoring_enabled = True
+            usr.save()
+        else:
+            usr.tutoring_enabled = False
+            usr.save()
+    return redirect(reverse("profile", kwargs={"username": username}))
+
+@ensure_authenticated
+def tutor_search(request):
+	query = request.GET.get('subject', '')
+	filter_type = request.GET.get('filter-type', 'no-filter')
+	filter_query = request.GET.get('filter-query', '')
+	tutors = User.objects.filter(tutor_subjects__icontains=query, tutoring_enabled = True).exclude(username=request.user);
+
+	if filter_type == 'username' and filter_query:
+		partials = tutors.filter(username__icontains=filter_query)
+		tutors = tutors.filter(username__iexact=filter_query).union(partials).order_by('username')
+	elif filter_type == 'zip-code':
+		tutors = tutors.filter(zip_code__icontains=filter_query)
+	
+	return render(request, 'tutor_search.html', {'tutors': tutors, 'query': query, 'filter_type': filter_type, 'filter_query': filter_query})
+
 def study_groups(request):
     my_groups = StudyGroup.objects.filter(user_list=request.user)
     base = StudyGroup.objects.filter(university=request.user.university)
@@ -153,6 +188,7 @@ def save_desc(request, group_id):
         group.description = request_data['desc'][:500]
         group.save()
         return HttpResponse("CONFIRM")
+<<<<<<< HEAD
     return HttpResponse("DENY")
 
 @csrf_exempt
@@ -219,3 +255,107 @@ def leave_group(request, group_id):
         group.user_list.remove(request.user)
         return HttpResponse("CONFIRM")
     return HttpResponse("DENY")
+=======
+    
+@csrf_exempt
+@ensure_authenticated
+def save_bio(request, username=""):
+    request_data = json.loads(request.body)
+    usr = get_object_or_404(User, username=username)
+    if usr.username == request.user.username:
+        usr.bio = request_data['bio']
+        usr.save()
+        return HttpResponse("CONFIRM")
+    
+    
+@csrf_exempt
+@ensure_authenticated
+def save_zip(request, username=""):
+    if request.method == "POST":
+        request_data = json.loads(request.body)
+        zip_code = request_data.get("zip")
+        
+        if zip_code is not None:
+            usr = get_object_or_404(User, username=username)
+            usr.zip_code = zip_code
+            usr.save()
+            return HttpResponse("ZIP code saved successfully")
+    
+    return HttpResponseBadRequest("invalid Zip Code")
+	
+ 
+@csrf_exempt
+@ensure_authenticated
+def save_pay(request, username=""):
+    if request.method == "POST":
+        request_data = json.loads(request.body)
+        pay_rate = request_data.get("pay")
+        
+        if pay_rate is not None:
+            usr = get_object_or_404(User, username=username)
+            usr.tutoring_pay = pay_rate
+            usr.save()
+            return HttpResponse("Pay rate saved successfully")
+    
+    return HttpResponseBadRequest("invalid Pay Rate")
+
+
+@csrf_exempt
+@ensure_authenticated
+def add_subject(request, username=""):
+    if request.method == "POST":
+        request_data = json.loads(request.body)
+        usr = get_object_or_404(User, username=username)
+        if usr.username == request.user.username:
+            new_subject = request_data.get("new_subject")
+            if new_subject:
+                usr.add_student_subject(new_subject)
+                return JsonResponse({"status": "CONFIRM"})
+    return JsonResponse({"error": "Invalid Request"}, status=400)
+
+
+@csrf_exempt
+@ensure_authenticated
+def remove_subject(request, username=""):
+    if request.method == "POST":
+        request_data = json.loads(request.body)
+        usr = get_object_or_404(User, username=username)
+        if usr.username == request.user.username:
+            subject_to_rm = request_data.get("subject")
+            if subject_to_rm:
+                usr.remove_student_subject(subject_to_rm)
+                return JsonResponse({"status": "CONFIRM"})
+    return JsonResponse({"error": "Invalid Request"}, status=400)
+
+
+@csrf_exempt
+@ensure_authenticated
+def add_tutoring(request, username=""):
+    print(request.body)
+    if request.method == "POST":
+        request_data = json.loads(request.body)
+        usr = get_object_or_404(User, username=username)
+        if usr.username == request.user.username:
+            new_tutoring = request_data.get("new_tutoring")
+            if new_tutoring:
+                usr.add_tutor_subject(new_tutoring)
+                return JsonResponse({"status": "CONFIRM"})
+    return JsonResponse({"error": "Invalid Request"}, status=400)
+
+
+@csrf_exempt
+@ensure_authenticated
+def remove_tutoring(request, username=""):
+    print("inside the view")
+    print(request.body)
+    if request.method == "POST":
+        request_data = json.loads(request.body)
+        usr = get_object_or_404(User, username=username)
+        if usr.username == request.user.username:
+            tutoring_to_rm = request_data.get("tutoring")
+            if tutoring_to_rm:
+                print("Removing tutoring subject: {tutoring_to_rm}")
+                usr.remove_tutor_subject(tutoring_to_rm)
+                return JsonResponse({"status": "CONFIRM"})
+    return JsonResponse({"error": "Invalid Request"}, status=400)
+>>>>>>> Sciole

@@ -5,8 +5,12 @@
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+<<<<<<< HEAD
     <link rel="shortcut icon" type="image/png" href="{% static 'main/favicon.ico' %}" >
+=======
+>>>>>>> Sciole
     <link href="{% static 'main/style.css' %}" rel="stylesheet" />
+	
     <title>{% block title %}{% endblock title %}</title>
 
   </head>
@@ -14,10 +18,17 @@
   {% if request.user.is_authenticated %}
   <nav class="navbar">
     <ul>
+<<<<<<< HEAD
       <li style="margin-left: 30px; margin-right: 20px;"><div style="margin-top: 7px;"><img src="{% static 'main/UtorLogoNavBar.png' %}" width=80px /></div></li>
       <li><a href="{% url 'index' %}">Home</a></li>
       <li><a href="{% url 'study_groups' %}">Study Groups</a></li>
       <li><a href="#">Test 3</a></li>
+=======
+      <li style="margin-left: 20px;"><a href="{% url 'index' %}">Home</a></li>
+	  <li><a href="{% url 'study_groups' %}">Study Groups</a></li>
+      <li><a href="{% url 'tutor_search' %}">Find a Tutor</a></li>
+      <li><a href="#">Messages</a></li>
+>>>>>>> Sciole
       <li><a href="#">Test 4</a></li>
       <li style="float: right; margin-right: 20px;"><a href="{% url 'logout' %}">Logout</a></li>
       <li style="float: right;"><a href="{% url 'profile' request.user.username %}">My Profile</a></li>
