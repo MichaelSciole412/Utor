@@ -126,46 +126,47 @@ document.addEventListener("DOMContentLoaded", function(){
 	}
 });
 
-/*
+
+
 document.addEventListener("DOMContentLoaded", function(){
-	const tutoringList = document.getElementById("tutoring_list");
-	tutoringList.addEventListener("click", function (event) {
-		if (event.target && event.target.classList.contains("rm-tut-button")) {
-			const tutoringToRemove = event.target.dataset.subject;
-			removeTutoring(tutoringToRemove, user);
-		}
-	});
+    const tutoringList = document.getElementById("tutoring_list");
+    tutoringList.addEventListener("click", function (event) {
+        if (event.target && event.target.classList.contains("rm-tut-button")) {
+            const tutoringToRemove = event.target.dataset.tutoring;
+            removeTutoring(tutoringToRemove, user);
+        }
+    });
 
-	const addTutoringButton = document.querySelector(".add-tut-button");
-	if(addTutoringButton)
-	{
-		addTutoringButton.addEventListener("click", function(){
-			newTutoring = document.getElementById("new_tutoring").value.trim();
-			const loop = "{{ forloop.counter }}";
-			addTutoring(newTutoring, user, loop);
-		});
-	}
+    const addTutoringButton = document.querySelector(".add-tut-button");
+    if(addTutoringButton)
+    {
+        addTutoringButton.addEventListener("click", function(){
+            newTutoringSubject = document.getElementById("new_tutoring").value.trim();
+            const loop = "{{ forloop.counter }}";
+            addTutoring(newTutoringSubject, user, loop);
+        });
+    }
 
-	function removeTutoring(subject, user)
-	{
-		console.log("Inside removeTutoring");
+
+	function removeTutoring(tutoring, user)
+	{	
 		req = new XMLHttpRequest();
 		req.open("POST", `/ajax/remove_tutoring/${user}/`);
 		req.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 
 		req.onload = function(){
+			console.log("Inside onload");
 			if (req.status == 200)
 			{
 				const data = JSON.parse(req.responseText);
 				if (data.status === "CONFIRM")
 				{
-					
-					const subjectElement = document.querySelector(`[data-subject="${tutoring}"]`).closest(".list");
-					console.log("subject to remove", subject);
-					if (subjectElement) 
+					console.log("status is CONFIRM");
+					const tutoringElement = document.querySelector(`[data-tutoring="${tutoring}"]`).closest(".list");
+					console.log("tutoring subject to remove", tutoring);
+					if (tutoringElement) 
 					{
-                        subjectElement.remove();
-						console.log("subject removed");
+                        tutoringElement.remove();
                     }
 					else
 					{
@@ -177,9 +178,13 @@ document.addEventListener("DOMContentLoaded", function(){
 					console.error("Failed to remove subject");
 				}
 			}
+			else
+			{
+				console.log("request is not 200");
+			}
 		};
 
-		req.send(JSON.stringify({ "subject": subject }));
+		req.send(JSON.stringify({ "tutoring": tutoring }));
 	}
 
 
@@ -192,13 +197,12 @@ document.addEventListener("DOMContentLoaded", function(){
 		req.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 
 		req.onload = function(){
-			console.log("Response:", req.responseText);
 			if (req.status == 200)
 			{
 				const data = JSON.parse(req.responseText);
 				if (data.status === "CONFIRM")
 				{
-					let newHtml = `<div class="list" id="subject_${loop}">
+					let newHtml = `<div class="list" id="tutoring_${loop}">
 										<div style="width: 90%;">${newTutoring}</div>`;
 
 					if (user) {
@@ -212,7 +216,7 @@ document.addEventListener("DOMContentLoaded", function(){
 					if (listContainer) 
 					{
                         listContainer.insertAdjacentHTML("beforebegin", newHtml);
-                        document.getElementById("new_subject").value = "";
+                        document.getElementById("new_tutoring").value = "";
                     }
 				}
 				else
@@ -225,11 +229,10 @@ document.addEventListener("DOMContentLoaded", function(){
 				console.error("Failed to add subject");
 			}
 		};
-		req.send(JSON.stringify({ "new_subject": newSubject }));
+		req.send(JSON.stringify({ "new_tutoring": newTutoring }));
 	}
 });
 
-*/
 
 
 
@@ -298,7 +301,8 @@ function saveZip(){
 
 function savePay(){
 	const payInput = document.getElementById("tutoring_rate");
-	const pay = payInput.value.trim();
+	const pay = parseFloat(payInput.value.trim());
+	console.log("Pay input: ", pay);
 
 
 	if(pay)
@@ -308,7 +312,7 @@ function savePay(){
 		req.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 
 		const payRate = document.getElementById("pay_display");
-		payRate.textContent = pay;
+		payRate.innerHTML = `${pay.toFixed(2)}`;
 		payInput.value = "";
 		req.send(JSON.stringify({"pay": pay}));
 	}

@@ -118,18 +118,15 @@ def enable_tutoring(request, username=""):
 @ensure_authenticated
 def tutor_search(request):
 	query = request.GET.get('subject', '')
- 
 	filter_type = request.GET.get('filter-type', 'no-filter')
 	filter_query = request.GET.get('filter-query', '')
-	
-	tutors = User.objects.filter(tutor_subjects__icontains=query, tutoring_enabled = True)
+	tutors = User.objects.filter(tutor_subjects__icontains=query, tutoring_enabled = True).exclude(username=request.user);
 
 	if filter_type == 'username' and filter_query:
 		partials = tutors.filter(username__icontains=filter_query)
 		tutors = tutors.filter(username__iexact=filter_query).union(partials).order_by('username')
 	elif filter_type == 'zip-code':
-		tutors = tutors.filter(tutor_zipcode__icontains=filter_query)
-	
+		tutors = tutors.filter(zip_code__icontains=filter_query)
 	
 	return render(request, 'tutor_search.html', {'tutors': tutors, 'query': query, 'filter_type': filter_type, 'filter_query': filter_query})
 
@@ -256,11 +253,12 @@ def remove_subject(request, username=""):
 @csrf_exempt
 @ensure_authenticated
 def add_tutoring(request, username=""):
+    print(request.body)
     if request.method == "POST":
         request_data = json.loads(request.body)
         usr = get_object_or_404(User, username=username)
         if usr.username == request.user.username:
-            new_tutoring = request_data.get("new_subject")
+            new_tutoring = request_data.get("new_tutoring")
             if new_tutoring:
                 usr.add_tutor_subject(new_tutoring)
                 return JsonResponse({"status": "CONFIRM"})
@@ -270,12 +268,15 @@ def add_tutoring(request, username=""):
 @csrf_exempt
 @ensure_authenticated
 def remove_tutoring(request, username=""):
+    print("inside the view")
+    print(request.body)
     if request.method == "POST":
         request_data = json.loads(request.body)
         usr = get_object_or_404(User, username=username)
         if usr.username == request.user.username:
             tutoring_to_rm = request_data.get("tutoring")
             if tutoring_to_rm:
+                print("Removing tutoring subject: {tutoring_to_rm}")
                 usr.remove_tutor_subject(tutoring_to_rm)
                 return JsonResponse({"status": "CONFIRM"})
     return JsonResponse({"error": "Invalid Request"}, status=400)

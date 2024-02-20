@@ -60,7 +60,7 @@
 					<div class="list" id="tutoring_{{ forloop.counter }}">
 						<div style="width: 90%;">{{ tutoring }}</div>
 						{% if current_user %}
-							<button id="rm-tut-button" class="rm-tut-button" data-subject = "{{ tutoring }}">Remove Subject</button>
+							<button id="rm-tut-button" class="rm-tut-button" data-tutoring = "{{ tutoring }}">Remove Subject</button>
 						{% endif %}
 					</div>
 				{% endfor %}
