@@ -192,71 +192,6 @@ def save_desc(request, group_id):
 
 @csrf_exempt
 @ensure_authenticated
-def delete_notification(request, notification_id):
-    notification = get_object_or_404(Notification, pk=notification_id)
-    if request.user == notification.user:
-        notification.delete()
-        return HttpResponse("CONFIRM")
-    return HttpResponse("DENY")
-
-@csrf_exempt
-@ensure_authenticated
-def request_join(request, group_id):
-    group = get_object_or_404(StudyGroup, pk=group_id)
-    group.requests.add(request.user)
-    group.save()
-
-    note = Notification()
-    note.user = group.owner
-    note.n_type = "group"
-    note.title = f"{request.user.username} has requested to join {group.name}"
-    note.text = f"{request.user.username} wants to join {group.name}.  Accept or deny this request on {group.name}'s home page."
-    note.regarding_group = group
-    note.save()
-
-    return HttpResponse("CONFIRM")
-
-@csrf_exempt
-@ensure_authenticated
-def accept_request(request, group_id, user_id):
-    group = get_object_or_404(StudyGroup, pk=group_id)
-    new_usr = get_object_or_404(User, pk=user_id)
-    if request.user == group.owner and group.requests.contains(new_usr):
-        group.requests.remove(new_usr)
-        group.user_list.add(new_usr)
-
-        note = Notification()
-        note.user = new_usr
-        note.n_type = "group"
-        note.title = f"You have joined {group.name}"
-        note.text = f"{request.user} has accepted your request to join {group.name}!  Click below to go to the study group's homepage."
-        note.regarding_group = group
-        note.save()
-
-        return HttpResponse("CONFIRM")
-    return HttpResponse("DENY")
-
-@csrf_exempt
-@ensure_authenticated
-def reject_request(request, group_id, user_id):
-    group = get_object_or_404(StudyGroup, pk=group_id)
-    new_usr = get_object_or_404(User, pk=user_id)
-    if request.user == group.owner and group.requests.contains(new_usr):
-        group.requests.remove(new_usr)
-        return HttpResponse("CONFIRM")
-    return HttpResponse("DENY")
-
-@csrf_exempt
-@ensure_authenticated
-def leave_group(request, group_id):
-    group = get_object_or_404(StudyGroup, pk=group_id)
-    if group.user_list.contains(request.user):
-        group.user_list.remove(request.user)
-        return HttpResponse("CONFIRM")
-    return HttpResponse("DENY")
-
-@csrf_exempt
-@ensure_authenticated
 def save_bio(request, username=""):
     request_data = json.loads(request.body)
     usr = get_object_or_404(User, username=username)
@@ -356,3 +291,68 @@ def remove_tutoring(request, username=""):
                 usr.remove_tutor_subject(tutoring_to_rm)
                 return JsonResponse({"status": "CONFIRM"})
     return JsonResponse({"error": "Invalid Request"}, status=400)
+
+@csrf_exempt
+@ensure_authenticated
+def delete_notification(request, notification_id):
+    notification = get_object_or_404(Notification, pk=notification_id)
+    if request.user == notification.user:
+        notification.delete()
+        return HttpResponse("CONFIRM")
+    return HttpResponse("DENY")
+
+@csrf_exempt
+@ensure_authenticated
+def request_join(request, group_id):
+    group = get_object_or_404(StudyGroup, pk=group_id)
+    group.requests.add(request.user)
+    group.save()
+
+    note = Notification()
+    note.user = group.owner
+    note.n_type = "group"
+    note.title = f"{request.user.username} has requested to join {group.name}"
+    note.text = f"{request.user.username} wants to join {group.name}.  Accept or deny this request on {group.name}'s home page."
+    note.regarding_group = group
+    note.save()
+
+    return HttpResponse("CONFIRM")
+
+@csrf_exempt
+@ensure_authenticated
+def accept_request(request, group_id, user_id):
+    group = get_object_or_404(StudyGroup, pk=group_id)
+    new_usr = get_object_or_404(User, pk=user_id)
+    if request.user == group.owner and group.requests.contains(new_usr):
+        group.requests.remove(new_usr)
+        group.user_list.add(new_usr)
+
+        note = Notification()
+        note.user = new_usr
+        note.n_type = "group"
+        note.title = f"You have joined {group.name}"
+        note.text = f"{request.user} has accepted your request to join {group.name}!  Click below to go to the study group's homepage."
+        note.regarding_group = group
+        note.save()
+
+        return HttpResponse("CONFIRM")
+    return HttpResponse("DENY")
+
+@csrf_exempt
+@ensure_authenticated
+def reject_request(request, group_id, user_id):
+    group = get_object_or_404(StudyGroup, pk=group_id)
+    new_usr = get_object_or_404(User, pk=user_id)
+    if request.user == group.owner and group.requests.contains(new_usr):
+        group.requests.remove(new_usr)
+        return HttpResponse("CONFIRM")
+    return HttpResponse("DENY")
+
+@csrf_exempt
+@ensure_authenticated
+def leave_group(request, group_id):
+    group = get_object_or_404(StudyGroup, pk=group_id)
+    if group.user_list.contains(request.user):
+        group.user_list.remove(request.user)
+        return HttpResponse("CONFIRM")
+    return HttpResponse("DENY")
