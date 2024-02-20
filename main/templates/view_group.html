@@ -8,12 +8,27 @@
 {% block content %}
 <div class="outer">
   <div class="maindiv">
+    {% if request.user not in group.user_list.all %}
+      {% if request.user in group.requests.all %}
+      <div class="join_group" style="float: right;">
+        <button class="clickedbutton" id="joinbutton" style="float: right;">Request Sent</button>
+      </div>
+      {% else %}
+      <div class="join_group" style="float: right;">
+        <button class="anchorbutton" id="joinbutton" onclick="requestJoin({{ group.id }});" style="float: right;">Request to Join this Group</button>
+      </div>
+      {% endif %}
+    {% elif request.user != group.owner %}
+    <div class="join_group" style="float: right;">
+      <button class="anchorbutton" style="float: right;" onclick="leave();">Leave Group</button>
+    </div>
+    {% endif %}
     <div class="center text-center">
       <h1>{{ group.name }}</h1>
       <h4>Group Owner: <a href="{% url 'profile' group.owner.username %}" class="userlink">{{ group.owner.username }}</a></h4>
     </div>
     <div class="sidebyside" style="background: #DDF;">
-      <div class="description innersidebyside">
+      <div class="description innersidebyside" style="background: #E8E8FF;">
         <h3>Description</h3>
         <div id="desc">
           <p id="desc_text">{{ group.description }}</p>
@@ -23,6 +38,7 @@
         </div>
       </div>
       <div class="userlist center innersidebyside">
+        <div id="userlist">
         <h3>User List</h3>
         {% for usr in group.user_list.all %}
           <div class="list2">
@@ -32,6 +48,25 @@
             {% endif %}
           </div>
         {% endfor %}
+        </div>
+        {% if request.user == group.owner %}
+        <div id="requestlist">
+        <h3>Requests<span style="display: none;" id="num_requests">{{ group.requests.all.count }}</span></h3>
+          {% if group.requests.all %}
+            {% for usr in group.requests.all %}
+            <div class="list2" id="request{{ usr.id }}">
+              <div style="width: 90%; padding: 7px; margin-left: 10px;"><a href="{% url 'profile' usr.username %}" class="userlink">{{ usr.username }}</a></div>
+                <button onclick="accept({{ usr.id }}, '{{ usr.username }}');" style="min-width: 80px;">Accept</button>
+                <button onclick="reject({{ usr.id }});" style="min-width: 80px;">Reject</button>
+            </div>
+            {% endfor %}
+          {% else %}
+          <div class="list2">
+            <div style="width: 90%; padding: 7px; margin-left: 10px;">None</div>
+          </div>
+          {% endif %}
+        {% endif %}
+        </div>
       </div>
     </div>
   </div>

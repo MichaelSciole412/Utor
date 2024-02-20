@@ -74,6 +74,12 @@ class User(AbstractUser):
                 pass
         self.set_student_subjects(current)
 
+    def has_notifications(self):
+        return bool(Notification.objects.filter(user=self))
+
+    def num_notifications(self):
+        return len(Notification.objects.filter(user=self))
+
 class StudyGroup(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="owned_studygroups")
     university = models.ForeignKey(University, on_delete=models.CASCADE)
@@ -112,3 +118,12 @@ class Message(models.Model):
     text = models.TextField()
     creator = models.ForeignKey(User, on_delete=models.CASCADE)
     conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE)
+
+class Notification(models.Model):
+    time = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    n_type = models.CharField(max_length=10)
+    title = models.CharField(max_length = 150)
+    text = models.CharField(max_length = 500)
+    regarding_group = models.ForeignKey(StudyGroup, null=True, on_delete=models.CASCADE, related_name="gnot_set")
+    regarding_user = models.ForeignKey(User, null=True, on_delete=models.CASCADE, related_name="regu_set")

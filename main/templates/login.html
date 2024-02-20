@@ -1,12 +1,15 @@
 {% extends 'base.html' %}
-
+{% load static %}
 {% block title %}Login{% endblock %}
 
 {% block content %}
 <div class="outer">
   <div class="form smallform">
+    <div class="text-center center">
+      <img src="{% static 'main/UtorLogo.png' %}" width=150px />
+    </div>
     <div class="center text-center">
-    <h2>Login</h2>
+      <h2>Login</h2>
     </div>
     {% if message %}
     <div class="alert-message">
@@ -28,11 +31,11 @@
       {% endfor %}
       </table>
     <div class="center text-center">
-      <input type="submit" value="Submit" />
+      <input type="submit" value="Submit" class="anchorbutton"/>
     </div>
     </form>
     <div>
-      <a href="{% url 'create_account' %}">Create Account</a>
+      <a class="anchorbutton" href="{% url 'create_account' %}">Create Account</a>
     </div>
   </div>
 <div>

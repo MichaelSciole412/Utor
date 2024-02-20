@@ -135,13 +135,28 @@ form div {
   flex-direction: column;
 }
 
+.flexrow {
+  display: flex;
+  flex-direction: row;
+}
+
 .cardlist {
-  width: 95%;
   background: #FFF;
   padding: 10px;
   border-radius: 8px;
   margin: auto;
   margin-top: 2px;
+  width: 95%;
+}
+
+.cardlist2 {
+  background: #FFF;
+  padding: 10px;
+  padding-left: 40px;
+  border-radius: 8px;
+  margin: auto;
+  margin-top: 2px;
+  width: 55%;
 }
 
 .list {
@@ -162,6 +177,10 @@ form div {
   margin: 2px;
   display: flex;
   flex-direction: horizontal;
+}
+
+.description {
+  background: #EEF;
 }
 
 .text-1 * {
@@ -204,12 +223,62 @@ textarea {
   transition: all 0.2s;
 }
 
+.anchorbutton {
+  text-decoration: none;
+  font-weight: bold;
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  background: #346;
+}
+
+button.anchorbutton {
+  border: none;
+  cursor: pointer;
+}
+input.anchorbutton {
+  border: none;
+  cursor: pointer;
+}
+
+.anchorbutton:hover {
+  transition: all 0.2s;
+  background: #5566AA;
+}
+
+.clickedbutton {
+  text-decoration: none;
+  color: #124;
+  font-weight: bold;
+  padding: 8px;
+  border-radius: 8px;
+  background: #BBF;
+  border: 2px solid #124;
+}
+
 .userlink {
   text-decoration: none;
 }
 
+.xbutton {
+  background: rgba(0, 0, 0, 0);
+  border: none;
+  float: right;
+}
+
+#notification_info {
+  color: red;
+  font-size: 15pt;
+}
+
 #desc_textarea {
   width: 100%;
+}
+
+#desc {
+  background: #FFF;
+  padding: 5px;
+  border-radius: 5px;
 }
 
 #desc_text {
