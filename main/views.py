@@ -104,13 +104,13 @@ def profile(request, username):
         if request.POST.get("remove_tutor_subject") is not None:
             usr.remove_tutor_subject(request.POST.get("remove_tutor_subject"))
             return redirect(reverse("profile", kwargs={"username": username}))'''
-            
+
     return render(request, "profile.html", context={"user": usr, "current_user": current_user})
 
 @ensure_authenticated
 def enable_tutoring(request, username=""):
     usr = get_object_or_404(User, username=username)
-    
+
     if request.method == "POST" and usr.username == request.user.username:
         if usr.tutoring_enabled == False:
             usr.tutoring_enabled = True
@@ -132,7 +132,7 @@ def tutor_search(request):
 		tutors = tutors.filter(username__iexact=filter_query).union(partials).order_by('username')
 	elif filter_type == 'zip-code':
 		tutors = tutors.filter(zip_code__icontains=filter_query)
-	
+
 	return render(request, 'tutor_search.html', {'tutors': tutors, 'query': query, 'filter_type': filter_type, 'filter_query': filter_query})
 
 def study_groups(request):
@@ -188,7 +188,6 @@ def save_desc(request, group_id):
         group.description = request_data['desc'][:500]
         group.save()
         return HttpResponse("CONFIRM")
-<<<<<<< HEAD
     return HttpResponse("DENY")
 
 @csrf_exempt
@@ -255,8 +254,7 @@ def leave_group(request, group_id):
         group.user_list.remove(request.user)
         return HttpResponse("CONFIRM")
     return HttpResponse("DENY")
-=======
-    
+
 @csrf_exempt
 @ensure_authenticated
 def save_bio(request, username=""):
@@ -266,37 +264,37 @@ def save_bio(request, username=""):
         usr.bio = request_data['bio']
         usr.save()
         return HttpResponse("CONFIRM")
-    
-    
+
+
 @csrf_exempt
 @ensure_authenticated
 def save_zip(request, username=""):
     if request.method == "POST":
         request_data = json.loads(request.body)
         zip_code = request_data.get("zip")
-        
+
         if zip_code is not None:
             usr = get_object_or_404(User, username=username)
             usr.zip_code = zip_code
             usr.save()
             return HttpResponse("ZIP code saved successfully")
-    
+
     return HttpResponseBadRequest("invalid Zip Code")
-	
- 
+
+
 @csrf_exempt
 @ensure_authenticated
 def save_pay(request, username=""):
     if request.method == "POST":
         request_data = json.loads(request.body)
         pay_rate = request_data.get("pay")
-        
+
         if pay_rate is not None:
             usr = get_object_or_404(User, username=username)
             usr.tutoring_pay = pay_rate
             usr.save()
             return HttpResponse("Pay rate saved successfully")
-    
+
     return HttpResponseBadRequest("invalid Pay Rate")
 
 
@@ -358,4 +356,3 @@ def remove_tutoring(request, username=""):
                 usr.remove_tutor_subject(tutoring_to_rm)
                 return JsonResponse({"status": "CONFIRM"})
     return JsonResponse({"error": "Invalid Request"}, status=400)
->>>>>>> Sciole
