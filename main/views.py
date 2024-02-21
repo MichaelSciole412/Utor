@@ -1,4 +1,4 @@
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, Http404, JsonResponse
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, Http404, HttpResponseServerError, JsonResponse
 from django.template import loader
 from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
@@ -8,6 +8,7 @@ from django.contrib.auth import authenticate, login as log_in, logout as log_out
 from .misc_utils import *
 from django.core.mail import send_mail
 import time
+
 
 @ensure_authenticated
 def index(request):
@@ -120,18 +121,41 @@ def enable_tutoring(request, username=""):
             usr.save()
     return redirect(reverse("profile", kwargs={"username": username}))
 
+ZIP_WISE_KEY = 'atue9sehje6s9kav'
+ZIP_WISE_API_ENDPOINT = 'https://www.zipwise.com/webservices/radius.php'
+import requests
+from django.db.models import Case, When, Value, IntegerField
+
 @ensure_authenticated
 def tutor_search(request):
 	query = request.GET.get('subject', '')
 	filter_type = request.GET.get('filter-type', 'no-filter')
 	filter_query = request.GET.get('filter-query', '')
 	tutors = User.objects.filter(tutor_subjects__icontains=query, tutoring_enabled = True).exclude(username=request.user);
-
+	zip_url = '{}?key={}&zip={}&radius=5&format=json'.format(ZIP_WISE_API_ENDPOINT, ZIP_WISE_KEY, filter_query)
 	if filter_type == 'username' and filter_query:
 		partials = tutors.filter(username__icontains=filter_query)
 		tutors = tutors.filter(username__iexact=filter_query).union(partials).order_by('username')
 	elif filter_type == 'zip-code':
-		tutors = tutors.filter(zip_code__icontains=filter_query)
+		try:
+			response = requests.get(zip_url)
+			response.raise_for_status()
+		except requests.RequestException as e:
+			return HttpResponseServerError("Internal Server Error")
+  
+		if response.status_code == 200:
+			zip_data = response.json()
+			prox_data = zip_data.get('results', [])
+			zip_codes = [result['zip'] for result in prox_data]
+			exact_zip = [zip_code for zip_code in zip_codes if zip_code == filter_query]
+			inexact_zip = [zip_code for zip_code in zip_codes if zip_code != filter_query]
+			ordered_prox = exact_zip + inexact_zip
+   
+			ordering = Case(
+    			*[When(zip_code=zip_code, then=Value(i, output_field=IntegerField())) for i, zip_code in enumerate(ordered_prox)]
+			)
+   
+			tutors = tutors.filter(zip_code__in=ordered_prox).order_by(ordering)
 	
 	return render(request, 'tutor_search.html', {'tutors': tutors, 'query': query, 'filter_type': filter_type, 'filter_query': filter_query})
 
@@ -263,7 +287,6 @@ def remove_subject(request, username=""):
 @csrf_exempt
 @ensure_authenticated
 def add_tutoring(request, username=""):
-    print(request.body)
     if request.method == "POST":
         request_data = json.loads(request.body)
         usr = get_object_or_404(User, username=username)
@@ -278,19 +301,15 @@ def add_tutoring(request, username=""):
 @csrf_exempt
 @ensure_authenticated
 def remove_tutoring(request, username=""):
-    print("inside the view")
-    print(request.body)
     if request.method == "POST":
         request_data = json.loads(request.body)
         usr = get_object_or_404(User, username=username)
         if usr.username == request.user.username:
             tutoring_to_rm = request_data.get("tutoring")
             if tutoring_to_rm:
-                print("Removing tutoring subject: {tutoring_to_rm}")
                 usr.remove_tutor_subject(tutoring_to_rm)
                 return JsonResponse({"status": "CONFIRM"})
     return JsonResponse({"error": "Invalid Request"}, status=400)
-    return HttpResponse("DENY")
 
 @csrf_exempt
 @ensure_authenticated
