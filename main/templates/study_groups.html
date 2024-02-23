@@ -43,7 +43,7 @@
         <h3>Study Groups</h3>
       </div>
       <div style="margin-bottom: 5px;">
-        <form style="width: 97%; margin: auto;" class="miniform" action="{% url 'study_groups' %}" method="POST">
+        <form style="width: 97%; margin: auto;" class="miniform" action="{% url 'study_groups' %}" method="GET">
           {% csrf_token %}
           <input class="text-input" type="text" name="search" placeholder="Search study groups by name, subject, course number, or owner" required />
           <input class="submit-button" type="submit" value="Search" />
@@ -55,7 +55,10 @@
         <a href="{% url 'view_group' group.id %}" class="biglink">
         <div class="cardlist">
           <h4>{{ group.name }}</h4>
-          <div style="display: flex; flex-direction: horizontal;">
+          <span><strong>Group Owner: </strong>{{ group.owner.username }}</span>
+          <br/>
+          <span><strong>Members: </strong>{{ group.user_list.count }}</span>
+          <div style="display: flex; flex-direction: horizontal; margin-top: -15px;">
             <div style="width: 80%;">
               <p><strong>Subject: </strong>{{ group.subject }}</p>
             </div>
@@ -70,9 +73,19 @@
         {% endfor %}
       {% else %}
       <div style="margin: 10px;">
+        {% if search %}
+        <p>No search results found</p>
+        {% else %}
         <p>No study groups relevant to the subjects you are currently studying found</p>
+        {% endif %}
       </div>
       {% endif %}
+      </div>
+      <div class="pagination">
+        <div>{% if rec_groups.number != 1 %}<a class="pagelink" href="?{% if query %}search={{ query }}&{% endif %}page=1">«&nbsp;First</a>{% endif %}</div>
+        <div>{% if rec_groups.has_previous %}<a class="pagelink" href="?{% if query %}search={{ query }}&{% endif %}page={{ rec_groups.number|add:'-1' }}">‹&nbsp;Previous</a>{% endif %}</div>
+        <div>{% if rec_groups.has_next %}<a class="pagelink" href="?{% if query %}search={{ query }}&{% endif %}page={{ rec_groups.number|add:'1' }}">Next&nbsp;›</a>{% endif %}</div>
+        <div>{% if rec_groups.number != p.num_pages %}<a class="pagelink" href="?{% if query %}search={{ query }}&{% endif %}page={{ p.num_pages }}">Last&nbsp;»</a>{% endif %}</div>
       </div>
     </div>
   </div>

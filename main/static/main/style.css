@@ -265,6 +265,25 @@ input.anchorbutton {
   float: right;
 }
 
+.pagination {
+  margin: auto;
+  padding: 15px;
+  width: 400px;
+  display: flex;
+  flex-direction: row;
+}
+
+.pagination > div {
+  width: 25%;
+}
+
+.pagelink {
+  text-decoration: none;
+  padding: 10px;
+  background: #EEF;
+  border-radius: 10px;
+}
+
 #notification_info {
   color: red;
   font-size: 15pt;

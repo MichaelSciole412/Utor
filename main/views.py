@@ -2,12 +2,14 @@ from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedire
 from django.template import loader
 from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
+from django.core.paginator import Paginator
 from .forms import *
 from .models import *
 from django.contrib.auth import authenticate, login as log_in, logout as log_out
 from .misc_utils import *
 from django.core.mail import send_mail
 import time
+import re
 
 @ensure_authenticated
 def index(request):
@@ -135,17 +137,50 @@ def tutor_search(request):
 
 	return render(request, 'tutor_search.html', {'tutors': tutors, 'query': query, 'filter_type': filter_type, 'filter_query': filter_query})
 
+@csrf_exempt
+@ensure_authenticated
 def study_groups(request):
     my_groups = StudyGroup.objects.filter(user_list=request.user)
     base = StudyGroup.objects.filter(university=request.user.university)
     rec_groups = StudyGroup.objects.none()
-    for subject in request.user.get_student_subjects():
-        rec_groups |= base.filter(subject__iexact=subject).exclude(user_list=request.user)
-    for subject in request.user.get_student_subjects():
-        rec_groups |= base.filter(subject__icontains=subject).exclude(user_list=request.user)
+    search = False
+    if 'search' in request.GET and request.GET.get('search', ''):
+        search = True
+        query = request.GET.get("search", "")
+        if re.match("^[A-Za-z_]{2,3} \d{1,5}$", query):
+            rec_groups |= base.filter(course__iexact=query)
+        if User.objects.filter(username__iexact=query).exists():
+            rec_groups |= base.filter(owner__username__iexact=query)
+        if base.filter(subject__iexact=query).exists():
+            rec_groups |= base.filter(subject__iexact=query)
+        rec_groups |= base.filter(name__iexact=query)
+        rec_groups |= base.filter(name__icontains=query)
+        rec_groups |= base.filter(subject__icontains=query)
+        rec_groups |= base.filter(owner__username__icontains=query)
+    else:
+        for subject in request.user.get_student_subjects():
+            rec_groups |= base.filter(subject__iexact=subject).exclude(user_list=request.user)
+        for subject in request.user.get_student_subjects():
+            rec_groups |= base.filter(subject__icontains=subject).exclude(user_list=request.user)
 
+    p = Paginator(rec_groups, 10)
+    if 'page' in request.GET:
+        page_num = request.GET.get('page')
+        try:
+            page_num = int(page_num)
+        except:
+            pass
+        if page_num not in p.page_range: raise Http404(f"Page {request.GET.get('page')} does not exist")
+        page = p.page(request.GET['page'])
+        for x in page:
+            print(x.name)
+    else:
+        page = p.page(1)
 
-    return render(request, "study_groups.html", context={"my_groups": my_groups, "rec_groups": rec_groups})
+    context = {"my_groups": my_groups, "rec_groups": page, "search": search, "p": p}
+    if 'search' in request.GET and request.GET.get('search', ''): context["query"] = request.GET.get('search', '')
+
+    return render(request, "study_groups.html", context=context)
 
 @ensure_authenticated
 def create_study_group(request):
@@ -169,13 +204,54 @@ def create_study_group(request):
 @ensure_authenticated
 def view_group(request, group_id):
     group = get_object_or_404(StudyGroup, pk=group_id)
-    usr_in_group = request.user in group.user_list.all()
+    usr_in_group = group.user_list.contains(request.user)
     return render(request, "view_group.html", context={"group": group, "usr_in_group": usr_in_group})
 
 @ensure_authenticated
 def notifications(request):
     notifs = Notification.objects.filter(user=request.user).order_by("-time")
     return render(request, "notifications.html", context={"notifications": notifs})
+
+@ensure_authenticated
+def make_post(request, group_id):
+    group = get_object_or_404(StudyGroup, pk=group_id)
+    if not group.user_list.contains(request.user):
+        return redirect(reverse("view_group", kwargs={"group_id": group_id}))
+    form = GroupPostForm()
+    if request.method == "POST":
+        form = GroupPostForm(request.POST)
+        if form.is_valid():
+            new_post = GroupPost()
+            new_post.poster = request.user
+            new_post.group = group
+            new_post.title = form.cleaned_data["title"]
+            if form.cleaned_data["image_source"]:
+                new_post.image_source = form.cleaned_data["image_source"]
+            if form.cleaned_data["text"]:
+                new_post.text = form.cleaned_data["text"]
+            new_post.save()
+            
+            return redirect(reverse("view_group", kwargs={"group_id": group_id}))
+
+    return render(request, "make_post.html", context={"form": form, "group": group})
+
+@ensure_authenticated
+def join_group(request, group_id):
+    group = get_object_or_404(StudyGroup, pk=group_id)
+    if group.invitations.contains(request.user):
+        group.invitations.remove(request.user)
+        group.requests.remove(request.user)
+        group.user_list.add(request.user)
+
+        note = Notification()
+        note.user = group.owner
+        note.n_type = "group"
+        note.title = f"{request.user.username} has joined {group.name}"
+        note.text = f"{request.user.username} has accepted your invitation to join {group.name}"
+        note.regarding_group = group
+        note.save()
+
+    return redirect(reverse("view_group", kwargs={"group_id": group_id}))
 
 ### AJAX
 
@@ -325,6 +401,7 @@ def accept_request(request, group_id, user_id):
     new_usr = get_object_or_404(User, pk=user_id)
     if request.user == group.owner and group.requests.contains(new_usr):
         group.requests.remove(new_usr)
+        group.invitations.remove(new_usr)
         group.user_list.add(new_usr)
 
         note = Notification()
@@ -355,4 +432,56 @@ def leave_group(request, group_id):
     if group.user_list.contains(request.user):
         group.user_list.remove(request.user)
         return HttpResponse("CONFIRM")
+    return HttpResponse("DENY")
+
+@csrf_exempt
+@ensure_authenticated
+def kick_user(request):
+    if request.method == "POST":
+        request_data = json.loads(request.body)
+        group = get_object_or_404(StudyGroup, pk=request_data["group_id"])
+        usr = get_object_or_404(User, pk=request_data["user_id"])
+        if request.user == group.owner and usr != group.owner:
+            group.user_list.remove(usr)
+
+            note = Notification()
+            note.user = usr
+            note.title = f"You have been kicked out of {group.name}"
+            note.text = f"{request.user} has kicked you from {group.name}."
+            note.regarding_group = group
+            note.save()
+
+            return JsonResponse({"status": "CONFIRM"})
+    return JsonResponse({"error": "Invalid Request"}, status=400)
+
+@csrf_exempt
+@ensure_authenticated
+def invite(request):
+    if request.method == "POST":
+        request_data = json.loads(request.body)
+        group = get_object_or_404(StudyGroup, pk=request_data["group_id"])
+        if request.user == group.owner:
+            invite_username = request_data["username"]
+            if User.objects.filter(username=invite_username).exists():
+                invite_user = User.objects.get(username=invite_username)
+
+                if group.invitations.contains(invite_user):
+                    return HttpResponse("An invitation has already been sent")
+                if group.user_list.contains(invite_user):
+                    return HttpResponse("This user is already in the group")
+                else:
+                    group.invitations.add(invite_user)
+
+                    note = Notification()
+                    note.user = invite_user
+                    note.n_type = "group"
+                    note.title = f"You have been invited to join {group.name}"
+                    note.text = f"{request.user} has invited you to join {group.name}!  You can accept this request on the study group homepage. Click the link below to go to the study group's homepage."
+                    note.regarding_group = group
+                    note.save()
+
+                    return HttpResponse("Invite Sent!")
+            else:
+                return HttpResponse(f"User {invite_username} does not exist")
+
     return HttpResponse("DENY")

@@ -4,6 +4,7 @@ from .forms import *
 from .models import *
 import string
 import random
+import requests
 
 def ensure_authenticated(target):
     def wrapper(request, *args, **kwargs):
@@ -26,3 +27,12 @@ def generate_email_key():
 
 def domain_util(full_domain, remove_n=0):
     return ".".join(full_domain.split(".")[remove_n:])
+
+def is_url_image(image_url):
+    try:
+        r = requests.head(image_url)
+        if r.headers["content-type"].startswith("image"):
+            return True
+    except:
+        pass
+    return False

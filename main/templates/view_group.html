@@ -9,7 +9,11 @@
 <div class="outer">
   <div class="maindiv">
     {% if request.user not in group.user_list.all %}
-      {% if request.user in group.requests.all %}
+      {% if request.user in group.invitations.all %}
+      <div class="join_group" style="float: right;">
+        <a class="anchorbutton" href="{% url 'join_group' group.id %}" style="float: right;">Click to Join</a>
+      </div>
+      {% elif request.user in group.requests.all %}
       <div class="join_group" style="float: right;">
         <button class="clickedbutton" id="joinbutton" style="float: right;">Request Sent</button>
       </div>
@@ -27,7 +31,7 @@
       <h1>{{ group.name }}</h1>
       <h4>Group Owner: <a href="{% url 'profile' group.owner.username %}" class="userlink">{{ group.owner.username }}</a></h4>
     </div>
-    <div class="sidebyside" style="background: #DDF;">
+    <div class="sidebyside" style="background: #DDF; width: 97%; margin: auto;">
       <div class="description innersidebyside" style="background: #E8E8FF;">
         <h3>Description</h3>
         <div id="desc">
@@ -39,15 +43,22 @@
       </div>
       <div class="userlist center innersidebyside">
         <div id="userlist">
-        <h3>User List</h3>
-        {% for usr in group.user_list.all %}
-          <div class="list2">
-            <div style="width: 90%; padding: 7px; margin-left: 10px;"><a href="{% url 'profile' usr.username %}" class="userlink">{{ usr.username }}</a></div>
-            {% if request.user == group.owner and usr != group.owner %}
-              <button style="min-width: 80px;">Kick User</button>
-            {% endif %}
+          <h3>User List</h3>
+          {% for usr in group.user_list.all %}
+            <div class="list2" id="listusr{{ usr.id }}">
+              <div style="width: 90%; padding: 7px; margin-left: 10px;"><a href="{% url 'profile' usr.username %}" class="userlink">{{ usr.username }}</a></div>
+              {% if request.user == group.owner and usr != group.owner %}
+                <button style="min-width: 80px;" onclick="kick({{ usr.id }}, '{{ usr.username }}')">Kick User</button>
+              {% endif %}
+            </div>
+          {% endfor %}
+          {% if request.user == group.owner %}
+          <div class="list2" id="invitestuff">
+            <div style="width: 40%; padding: 3px; margin-left: 10px;"><input type="text" name="inviteuser" id="inviteuser" style="width: 98%;" maxlength=50 placeholder="username"/></div>
+            <div style="width: 20%; text-align: center;"><button style="min-width: 80px; padding: 4px; margin: auto;" onclick="invite();">Send Invite</button></div>
+            <div style="width: 40%; color: #447; word-break: break-all" id="invite_text"></div>
           </div>
-        {% endfor %}
+          {% endif %}
         </div>
         {% if request.user == group.owner %}
         <div id="requestlist">
@@ -65,14 +76,20 @@
             <div style="width: 90%; padding: 7px; margin-left: 10px;">None</div>
           </div>
           {% endif %}
-        {% endif %}
         </div>
+        {% endif %}
       </div>
     </div>
+    {% if request.user in group.user_list.all %}
+    <div class="center text-center">
+      <a class="anchorbutton" href="{% url 'make_post' group.id %}">Make Post</a>
+    </div>
+    {% endif %}
   </div>
 </div>
 {% endblock %}
 
 {% block script %}<script src="{% static 'main/view_group.js' %}"
                           defer
-                          data-groupid="{{ group.id }}"></script>{% endblock %}
+                          data-groupid="{{ group.id }}"
+                          data-groupname="{{ group.name }}"></script>{% endblock %}
