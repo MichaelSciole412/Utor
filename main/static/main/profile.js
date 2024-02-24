@@ -288,8 +288,19 @@ function saveZip(){
 		req.open("POST", `/ajax/save_zip/${user}/`);
 		req.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 
-		const zipCode = document.getElementById("zip_code_display");
-		zipCode.textContent = zip;
+
+		req.onload = function () {
+            if (req.status === 200) {
+                console.log("ZIP code saved successfully");
+				const zipCode = document.getElementById("zip_code_display");
+				zipCode.textContent = zip;
+            } 
+			else 
+			{
+                alert(`Error: Invalid Zip Code\nData was not saved`);
+            }
+        };
+
 		zipInput.value = "";
 		req.send(JSON.stringify({"zip": zip}));
 	}

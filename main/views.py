@@ -122,7 +122,7 @@ def enable_tutoring(request, username=""):
     return redirect(reverse("profile", kwargs={"username": username}))
 
 ZIP_WISE_KEY = 'atue9sehje6s9kav'
-ZIP_WISE_API_ENDPOINT = 'https://www.zipwise.com/webservices/radius.php'
+ZIP_WISE_API_ENDPOINT = 'https://www.zipwise.com/webservices/'
 import requests
 from django.db.models import Case, When, Value, IntegerField
 
@@ -132,7 +132,7 @@ def tutor_search(request):
 	filter_type = request.GET.get('filter-type', 'no-filter')
 	filter_query = request.GET.get('filter-query', '')
 	tutors = User.objects.filter(tutor_subjects__icontains=query, tutoring_enabled = True).exclude(username=request.user);
-	zip_url = '{}?key={}&zip={}&radius=5&format=json'.format(ZIP_WISE_API_ENDPOINT, ZIP_WISE_KEY, filter_query)
+	zip_url = '{}radius.php?key={}&zip={}&radius=5&format=json'.format(ZIP_WISE_API_ENDPOINT, ZIP_WISE_KEY, filter_query)
 	if filter_type == 'username' and filter_query:
 		partials = tutors.filter(username__icontains=filter_query)
 		tutors = tutors.filter(username__iexact=filter_query).union(partials).order_by('username')
@@ -230,13 +230,26 @@ def save_zip(request, username=""):
     if request.method == "POST":
         request_data = json.loads(request.body)
         zip_code = request_data.get("zip")
+        zip_url = '{}zipinfo.php?key={}&zip={}&radius=5&format=json'.format(ZIP_WISE_API_ENDPOINT, ZIP_WISE_KEY, zip_code)
+        try:
+            response = requests.get(zip_url)
+            response.raise_for_status()
+        except requests.RequestException as e:
+            return HttpResponseServerError("Internal Server Error")
         
-        if zip_code is not None:
-            usr = get_object_or_404(User, username=username)
-            usr.zip_code = zip_code
-            usr.save()
-            return HttpResponse("ZIP code saved successfully")
-    
+        if response.status_code == 200:
+            zip_data = response.json()
+            print(zip_data)
+            is_error = zip_data.get('results', [])
+            if 'error' in is_error:
+                msg = is_error['error]']
+                return HttpResponseBadRequest("{msg}")
+            else:
+                usr = get_object_or_404(User, username=username)
+                usr.zip_code = zip_code
+                usr.save()
+                return HttpResponse("ZIP code saved successfully")
+
     return HttpResponseBadRequest("invalid Zip Code")
 	
  

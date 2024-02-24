@@ -31,8 +31,8 @@ class User(AbstractUser):
     is_verified = models.BooleanField(default=False)
     email_key = models.CharField(max_length=50, unique=True)
     tutoring_enabled = models.BooleanField(default=False)
-    tutoring_pay = models.DecimalField(null=True, decimal_places=2, max_digits=4)
-    zip_code = models.IntegerField(null=True)
+    tutoring_pay = models.DecimalField(null=True, decimal_places=2, max_digits=4, default=0.00)
+    zip_code = models.IntegerField(null=True, default=28607)
 
     def get_tutor_subjects(self):
         return json.loads(self.tutor_subjects or "[]")

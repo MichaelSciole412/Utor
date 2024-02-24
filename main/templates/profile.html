@@ -85,14 +85,9 @@
 					</div>
 				</td>
 			</tr>
-
 			<tr>
 				<td colspan="2" class="text-center">
-					{% if user.tutoring_pay %}
 						<p>Current Zip Code: <span id="zip_code_display">{{ user.zip_code }}</span></p>
-					{% else %}
-						<p>Default Zip Code: <span id="zip_code_display">{{ user.zip_code }}</span></p>
-					{% endif %}
 				</td>
 			</tr>
 
@@ -111,11 +106,7 @@
 		
 			<tr>
 				<td colspan="2" class="text-center">
-					{% if user.tutoring_pay %}
-						<p>User's Tutoring Rate: $<span id="pay_display">{{ user.tutoring_pay }}</span></p>
-					{% else %}
-						<p>User has not set a tutoring rate yet.</p>
-					{% endif %}
+					<p>{{ user.username}}'s Current Tutoring Rate: $<span id="pay_display">{{ user.tutoring_pay }}</span></p>
 				</td>
 			</tr>
 		</table>
