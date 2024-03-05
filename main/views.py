@@ -1,8 +1,10 @@
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, Http404, JsonResponse
+from django.utils.html import escape, format_html, smart_urlquote
 from django.template import loader
 from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.core.paginator import Paginator
+from django.utils.dateformat import DateFormat
 from .forms import *
 from .models import *
 from django.contrib.auth import authenticate, login as log_in, logout as log_out
@@ -161,7 +163,13 @@ def study_groups(request):
         for subject in request.user.get_student_subjects():
             rec_groups |= base.filter(subject__iexact=subject).exclude(user_list=request.user)
         for subject in request.user.get_student_subjects():
+            rec_groups |= base.filter(name__iexact=subject).exclude(user_list=request.user)
+
+        for subject in request.user.get_student_subjects():
             rec_groups |= base.filter(subject__icontains=subject).exclude(user_list=request.user)
+        for subject in request.user.get_student_subjects():
+            rec_groups |= base.filter(name__icontains=subject).exclude(user_list=request.user)
+
 
     p = Paginator(rec_groups, 10)
     if 'page' in request.GET:
@@ -204,8 +212,9 @@ def create_study_group(request):
 @ensure_authenticated
 def view_group(request, group_id):
     group = get_object_or_404(StudyGroup, pk=group_id)
+    posts = group.grouppost_set.order_by("-time")
     usr_in_group = group.user_list.contains(request.user)
-    return render(request, "view_group.html", context={"group": group, "usr_in_group": usr_in_group})
+    return render(request, "view_group.html", context={"group": group, "usr_in_group": usr_in_group, "posts": posts})
 
 @ensure_authenticated
 def notifications(request):
@@ -227,10 +236,19 @@ def make_post(request, group_id):
             new_post.title = form.cleaned_data["title"]
             if form.cleaned_data["image_source"]:
                 new_post.image_source = form.cleaned_data["image_source"]
-            if form.cleaned_data["text"]:
-                new_post.text = form.cleaned_data["text"]
             new_post.save()
-            
+            if form.cleaned_data["text"]:
+                temp = escape(form.cleaned_data["text"])
+                temp = re.sub("(&[a-z]+;|&#\d+;)", "\n\g<0>\n", temp)
+                temp = re.sub("\[(.+)\]\(((https://|http://|www\.)\S*)\)", "<a class='postlink' href=\"\g<2>\">\g<1></a>", temp)
+                temp = re.sub("((?<!href=\")(?<!href=\"http://)(?<!href=\"https://)(https://|http://|www\.)\S*)", "<a class='postlink' href=\"\g<0>\">\g<0></a>", temp)
+                temp = re.sub("\n(&[a-z]+;|&#\d+;)\n", "\g<1>", temp)
+                temp = re.sub("@[a-zA-Z0-9\-_]{1,50}", user_tag_util(group.id, request.user.username, new_post.id), temp)
+                new_post.text = temp
+            new_post.save()
+
+
+
             return redirect(reverse("view_group", kwargs={"group_id": group_id}))
 
     return render(request, "make_post.html", context={"form": form, "group": group})
@@ -483,5 +501,41 @@ def invite(request):
                     return HttpResponse("Invite Sent!")
             else:
                 return HttpResponse(f"User {invite_username} does not exist")
+
+    return HttpResponse("DENY")
+
+@csrf_exempt
+@ensure_authenticated
+def make_comment(request):
+    request_data = json.loads(request.body)
+    group = get_object_or_404(StudyGroup, pk=request_data["group_id"])
+    post = get_object_or_404(GroupPost, pk=request_data["post_id"])
+    comment_text = request_data["comment"]
+    if group.user_list.contains(request.user):
+        comment = Comment()
+        comment.author = request.user
+        comment.post = post
+        temp = escape(comment_text)
+        temp = re.sub("(&[a-z]+;|&#\d+;)", "\n\g<0>\n", temp)
+        temp = re.sub("\[(.+)\]\(((https://|http://|www\.)\S*)\)", "<a class='postlink' href=\"\g<2>\">\g<1></a>", temp)
+        temp = re.sub("((?<!href=\")(?<!href=\"http://)(?<!href=\"https://)(https://|http://|www\.)\S*)", "<a class='postlink' href=\"\g<0>\">\g<0></a>", temp)
+        temp = re.sub("\n(&[a-z]+;|&#\d+;)\n", "\g<1>", temp)
+        temp = re.sub("@[a-zA-Z0-9\-_]{1,50}", user_tag_util(group.id, request.user.username, post.id), temp)
+        comment.text = temp
+        comment.save()
+
+        date_formatter = DateFormat(comment.time)
+        time_str = date_formatter.format("n/j/y g:i") + "&nbsp;" + date_formatter.format("A")
+        break_fix_ct = comment.text.replace('\n', '<br/>')
+        response_html = f"""
+                        <div class="comment">
+                            <div class="flexrow center">
+                              <div style="width: 80%;"><h5 style="margin-top: 5px; margin-bottom: 15px;"><a class="userlink" href="/profile/{comment.author.username}/">{ comment.author.username }</a></h5></div>
+                              <div style="text-align: right; font-size: 11px; color: gray; width: 20%;">{time_str}</div>
+                            </div>
+                            { break_fix_ct }
+                        </div>"""
+
+        return HttpResponse(response_html)
 
     return HttpResponse("DENY")

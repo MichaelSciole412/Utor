@@ -284,6 +284,41 @@ input.anchorbutton {
   border-radius: 10px;
 }
 
+.posttext {
+  width: 80%;
+  background: #E8E8FF;
+  margin: auto;
+  padding: 20px;
+  border-radius: 5px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.spanheader {
+  font-weight: bold;
+  font-size: 8pt;
+}
+
+.comment {
+  border-radius: 15px;
+  background: #BBF;
+  padding: 15px;
+  padding-left: 25px;
+  padding-right: 25px;
+  margin-bottom: 10px;
+}
+
+.hidden-comments {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.6s ease;
+}
+.visible-comments {
+  max-height: 10px;
+  overflow: hidden;
+  transition: max-height 0.6s ease;
+}
+
 #notification_info {
   color: red;
   font-size: 15pt;

@@ -33,4 +33,5 @@ urlpatterns = [
 	path("ajax/leave_group/<int:group_id>/", views.leave_group, name="leave_group"),
 	path("ajax/kick_user/", views.kick_user, name="kick_user"),
 	path("ajax/invite/", views.invite, name="invite"),
+	path("ajax/make_comment/", views.make_comment, name="make_comment"),
 ]

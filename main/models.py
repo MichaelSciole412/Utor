@@ -109,6 +109,15 @@ class GroupPost(models.Model):
     text = models.TextField(null=True, blank=True)
     image_source = models.CharField(max_length=1000, null=True, blank=True)
 
+    def get_ordered_comments(self):
+        return self.comment_set.order_by("time")
+
+class Comment(models.Model):
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    post = models.ForeignKey(GroupPost, on_delete=models.CASCADE)
+    time = models.DateTimeField(auto_now_add=True)
+    text = models.TextField()
+
 class Conversation(models.Model):
     conversation_type = models.CharField(max_length=2, choices={"TM": "Tutor Message", "DM": "Direct Message", "GM": "Group Message"})
     users = models.ManyToManyField(User)
@@ -127,3 +136,4 @@ class Notification(models.Model):
     text = models.CharField(max_length = 500)
     regarding_group = models.ForeignKey(StudyGroup, null=True, on_delete=models.CASCADE, related_name="gnot_set")
     regarding_user = models.ForeignKey(User, null=True, on_delete=models.CASCADE, related_name="regu_set")
+    regarding_post = models.ForeignKey(GroupPost, null=True, on_delete=models.CASCADE, related_name="regp_set")

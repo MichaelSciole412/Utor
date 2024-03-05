@@ -29,6 +29,8 @@
               <p>{{ notif.text }}</p>
               {% if notif.n_type == "group" %}
                 <p><a href="{% url 'view_group' notif.regarding_group.id %}">{{ notif.regarding_group.name }}</a></p>
+              {% elif notif.n_type == "post" %}
+                <p><a href="{% url 'view_group' notif.regarding_post.group.id %}#post{{ notif.regarding_post.id }}">{{ notif.regarding_post.title }}</a></p>
               {% endif %}
               </div>
             </div>

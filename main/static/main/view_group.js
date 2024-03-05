@@ -156,11 +156,64 @@ function invite(){
     req.onload = function() {
           invite_input.value = ""
           invite_text.innerHTML = this.responseText;
-          setInterval(function() {
+          setTimeout(function() {
               invite_text.innerHTML = "";
           }, 3000);
       };
     req.send(JSON.stringify({"group_id": groupid, "username": invite_input.value}));
   }
 
+}
+
+function toggleComments(id) {
+  var div = document.getElementById("comments" + id);
+  div.classList.toggle("hidden-comments");
+  div.classList.toggle("visible-comments");
+  var button = document.getElementById("togglebutton" + id);
+  if (button.innerHTML == "Show Comments") button.innerHTML = "Hide Comments";
+  else button.innerHTML = "Show Comments";
+  if (div.classList.contains("visible-comments")) {
+    div.style.maxHeight = div.scrollHeight + "px";
+  } else {
+    div.style.maxHeight = null;
+  }
+}
+
+function makeComment(id) {
+  commentsList = document.getElementById("comments" + id);
+  comment_text = document.getElementById("newcommenttext" + id);
+  if (comment_text.value.length < 5) {
+    commentInfo = document.getElementById("commentinfo" + id);
+    commentInfo.style.visibility="visible";
+    setTimeout(function(){
+      commentInfo.style.visibility="hidden";
+    }, 3000);
+  } else {
+    req = new XMLHttpRequest();
+    req.open("POST", `/ajax/make_comment/`);
+    req.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    req.onload = function() {
+          if (this.responseText != "DENY"){
+            newCommentDiv = document.getElementById("newcommentdiv" + id);
+            new_comment = document.createElement("template");
+
+            new_comment.innerHTML = this.responseText;
+            new_comment = new_comment.content.children[0];
+
+            noneComments = document.getElementById("nonecomments" + id);
+            if (noneComments){
+              commentsList.removeChild(noneComments);
+            }
+
+            commentsList.insertBefore(new_comment, newCommentDiv);
+            comment_text.value = "";
+
+            var div = document.getElementById("comments" + id);
+            div.style.maxHeight = div.scrollHeight + "px";
+          }
+      };
+    req.send(JSON.stringify({"group_id": groupid, "post_id": id, "comment": comment_text.value}));
+
+
+  }
 }
