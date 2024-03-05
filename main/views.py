@@ -1,4 +1,4 @@
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, Http404, HttpResponseServerError, JsonResponse
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, Http404, HttpResponseServerError, JsonResponse, HttpRequest, StreamingHttpResponse
 from django.template import loader
 from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
@@ -8,6 +8,52 @@ from django.contrib.auth import authenticate, login as log_in, logout as log_out
 from .misc_utils import *
 from django.core.mail import send_mail
 import time
+
+# Imports for messaging
+import asyncio
+from typing import AsyncGenerator
+from . import models
+import random
+
+def create_message_group(request, username):
+    user = get_object_or_404(User, username=request.user.username)
+    
+    tutors = User.objects.filter(username=username)
+    tutor = tutors.first()
+    
+    existing_group = Recipient_Group.objects.filter(users=user).filter(users=tutor).first()
+    if existing_group:
+        return redirect(reverse("message_page"))
+    
+    recipient_group = Recipient_Group.objects.create()
+    recipient_group.users.add(user, tutor)
+    recipient_group.save()
+    return redirect(reverse("message_page"))
+
+def message_page(request):
+    user = get_object_or_404(User, username=request.user.username)
+    user_groups = Recipient_Group.objects.filter(users=user).all()
+        
+    return render(request, 'messages.html', {'user_groups': user_groups})
+
+def send_message(request, group_id):
+    user = user = get_object_or_404(User, username=request.user.username)
+    group = get_object_or_404(Recipient_Group, id=group_id, users=user)
+    
+    message = request.POST.get('message', '')
+    
+    if message:
+        msg = Message.objects.create(
+            text=message,
+            creator=user,
+        )
+        msg.recipents.add(group.id)
+        
+    return render(request, 'send_message.html', {'group_id': group_id})
+
+
+
+
 
 
 @ensure_authenticated
@@ -92,20 +138,6 @@ def profile_by_id(request, user_id):
 def profile(request, username):
     usr = get_object_or_404(User, username=username)
     current_user = usr.username == request.user.username
-    '''if request.method == "POST" and current_user:
-        if request.POST.get("new_subject") is not None:
-            usr.add_student_subject(request.POST.get("new_subject"))
-            return redirect(reverse("profile", kwargs={"username": username}))
-        if request.POST.get("remove_subject") is not None:
-            usr.remove_student_subject(request.POST.get("remove_subject"))
-            return redirect(reverse("profile", kwargs={"username": username}))
-        if request.POST.get("new_tutor_subject") is not None:
-            usr.add_tutor_subject(request.POST.get("new_tutor_subject"))
-            return redirect(reverse("profile", kwargs={"username": username}))
-        if request.POST.get("remove_tutor_subject") is not None:
-            usr.remove_tutor_subject(request.POST.get("remove_tutor_subject"))
-            return redirect(reverse("profile", kwargs={"username": username}))'''
-            
     return render(request, "profile.html", context={"user": usr, "current_user": current_user})
 
 @ensure_authenticated
@@ -132,6 +164,7 @@ def tutor_search(request):
 	filter_type = request.GET.get('filter-type', 'no-filter')
 	filter_query = request.GET.get('filter-query', '')
 	tutors = User.objects.filter(tutor_subjects__icontains=query, tutoring_enabled = True).exclude(username=request.user);
+ 
 	zip_url = '{}radius.php?key={}&zip={}&radius=5&format=json'.format(ZIP_WISE_API_ENDPOINT, ZIP_WISE_KEY, filter_query)
 	if filter_type == 'username' and filter_query:
 		partials = tutors.filter(username__icontains=filter_query)
@@ -158,6 +191,7 @@ def tutor_search(request):
 			tutors = tutors.filter(zip_code__in=ordered_prox).order_by(ordering)
 	
 	return render(request, 'tutor_search.html', {'tutors': tutors, 'query': query, 'filter_type': filter_type, 'filter_query': filter_query})
+
 
 def study_groups(request):
     my_groups = StudyGroup.objects.filter(user_list=request.user)

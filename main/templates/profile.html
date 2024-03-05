@@ -54,7 +54,9 @@
 	<div class="{% if user.tutoring_enabled %}maindiv{% else %}hidden{% endif %}" name="tutoring-section">
 		<table>
 			<tr>
-				<th valign=top>Currently Tutoring</th>
+				<th valign=top>Currently Tutoring
+					<p>enter exact course title<br>(ex. Calculus 2)</p>
+				</th>
 				<td id="tutoring_list">
 				{% for tutoring in user.get_tutor_subjects %}
 					<div class="list" id="tutoring_{{ forloop.counter }}">
@@ -114,14 +116,12 @@
 
 	<form method="post" action="{% url 'enable_tutoring' user.username %}">
 		{% csrf_token %}
-		<button type="submit">Enable Tutoring</button>
+		{% if user.tutoring_enabled %}
+			<button class="anchorbutton" type="submit">Disable Tutoring </button>
+		{% else %}
+			<button class="anchorbutton" type="submit">Enable Tutoring</button>
+		{% endif %}
 	</form>
-
-	{% if user.tutoring_enabled %}
-		<p>Tutoring Enabled! You will show up in tutoring searches.</p>
-	{% else %}
-		<p>Tutoring Disabled! You will be hidden in tutoring searches.</p>
-	{% endif %}
 
   </div>
 </div>

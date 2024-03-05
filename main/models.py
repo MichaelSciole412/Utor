@@ -109,15 +109,23 @@ class GroupPost(models.Model):
     text = models.TextField(null=True, blank=True)
     image_source = models.CharField(max_length=1000, null=True, blank=True)
 
-class Conversation(models.Model):
-    conversation_type = models.CharField(max_length=2, choices={"TM": "Tutor Message", "DM": "Direct Message", "GM": "Group Message"})
-    users = models.ManyToManyField(User)
+
+class Recipient_Group(models.Model):
+    name = models.CharField(max_length=100, default="")
+    users = models.ManyToManyField(User, related_name="recipient")
+    
+    def __str__(self):
+        return self.name
 
 class Message(models.Model):
     time = models.DateTimeField(auto_now_add=True)
     text = models.TextField()
-    creator = models.ForeignKey(User, on_delete=models.CASCADE)
-    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sent")
+    recipents = models.ForeignKey(Recipient_Group, on_delete=models.CASCADE, related_name="recipient")
+    
+    def __str__(self):
+        return f'{self.time} - {self.creator.username}'
+    
 
 class Notification(models.Model):
     time = models.DateTimeField(auto_now_add=True)
@@ -127,3 +135,6 @@ class Notification(models.Model):
     text = models.CharField(max_length = 500)
     regarding_group = models.ForeignKey(StudyGroup, null=True, on_delete=models.CASCADE, related_name="gnot_set")
     regarding_user = models.ForeignKey(User, null=True, on_delete=models.CASCADE, related_name="regu_set")
+
+    
+    

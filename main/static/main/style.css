@@ -94,7 +94,7 @@ form div {
 
 .smallform {
   min-width: 40%;
-  max-width: 50%;
+  max-width: 60%;
 }
 
 .miniform {
@@ -286,3 +286,156 @@ input.anchorbutton {
   white-space: normal;
   width: 100%;
 }
+
+
+/* Tutor Search Styles */
+  .search_box {
+	align-items: center; 
+	justify-content: center;
+	width: 80%;
+	margin: auto;
+  }
+  
+  .dropDown {
+	position: relative;
+	display: inline-block;
+  }
+  
+  .selection {
+	width: 200px;
+	padding: 10px;
+	font-size: 16px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	background-color: #fff;
+	cursor: pointer;
+  }
+
+
+  label {
+	display: block;
+	margin-bottom: 8px;
+  }
+  
+  input[type="text"],
+  select {
+	width: 100%;
+	padding: 8px;
+	margin-bottom: 16px;
+	box-sizing: border-box;
+  }
+
+  
+  h2 {
+	margin-top: 10px;
+	margin-bottom: 10px;
+  }
+  
+  .table {
+	width: 100%;
+	border-collapse: collapse;
+	margin-top: 20px;
+  }
+  
+  .table th,
+  .table td {
+	padding: 10px;
+	border: 1px solid #ddd;
+  }
+  
+  .table th {
+	background-color: #346;
+	color: #fff;
+  }
+  
+  .table td {
+	text-align: center;
+  }
+  
+
+  form {
+	text-align:center;
+  }
+
+  label {
+	display: block;
+	margin-top: 8px;
+	text-align: center;
+  }
+  
+  input[type="text"],
+  select {
+	width: 50%;
+	margin-bottom: 8px;
+  }
+
+
+  .tutor-form {
+	margin: auto;
+	text-align: center;
+  }
+
+  .tutor-table th {
+	text-align: center;
+  }
+
+  .tutor-table td,th {
+	padding: 10px;
+  }
+
+
+  .tutor {
+	margin: auto;
+	background: #DDF;
+	border-radius: 50px;
+	padding: 30px;
+  }
+
+  .smalltutor {
+	align-items: center;
+	min-width: 40%;
+	max-width: 60%;
+  }
+
+  .minitutor {
+	width: 100%;
+	display: flex;
+	flex-direction: horizontal;
+  }
+
+
+
+  /* Messages Page */
+
+  .messages {
+	font-size: 24px;
+	color: #333;
+	margin-bottom: 20px;
+  }
+
+  .convos {
+	list-style-type: none;
+  	padding: 0;
+  }
+
+  .convo-list {
+	margin-bottom: 10px;
+  }
+
+  .select-convo {
+	text-decoration: none;
+	color:  #346;
+	font-weight: bold;
+	display: block;
+	padding: 10px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	border-color: #346;
+	background-color: #BBD;
+	width: 20%;
+	transition: background-color 0.3s ease;
+  }
+
+  .select-convo:hover {
+	background-color: #f0f0f0;
+  }

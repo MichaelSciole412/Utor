@@ -2,51 +2,67 @@
 
 {% block content %}
 
-<div class="outer">
-	<div class="form smallform">
+<div class="search_box">
+	<div class="tutor smalltutor">
 		<form action="{% url 'tutor_search' %}" method="get">
-			<label for="subject">Search for Tutors:</label>
-			<input type="text" name="subject" id="subject" required>
-
-			<label for="filter-type">Filter by:</label>
-			<select name="filter-type" id="filter-type">
-				<option value="no-filter">No Filter</option>
-				<option value="username">Username</option>
-				<option value="zip-code">Zip Code</option>
+			<label for="subject">What subject do you need help with?</label>
+			<br>
+			<input style="margin:auto;" type="text" name="subject" id="subject" required>
+			<br>
+			<label for="filter-type">What should we search by?</label>
+			<br>
+			<select class="dropDown" name="filter-type" id="filter-type">
+				<option class="selection" value="no-filter">Everything</option>
+				<option class="selection" value="username">Username</option>
+				<option class="selection" value="zip-code">Zip Code</option>
 			</select>
+			<br>
 			<input type="text" name="filter-query" id="filter-query">
-
-			<button type="submit">Search</button>
+			<br>
+			<button class="anchorbutton" type="submit">Search</button>
 		</form>
 
 		
+		{% if query %}
+			<h2>Results matching search:</h2>
 
-		<h2>Search Results for "{{ query }}"</h2>
-
-		{% if tutors %}
-			<table class="table">
-				<thead>
-					<tr style="text-align: center;">
-						<th>Username</th>
-						<th>Tutoring Subjects</th>
-						<th>Zip Code</th>
-					</tr>
-				</thead>
-				<tbody>
-					{% for tutor in tutors %}
+			{% if tutors %}
+				<table class="table">
+					<thead>
 						<tr style="text-align: center;">
-							<td>{{ tutor.username }}</td>
-							<td>{{ tutor.tutor_subjects }}</td>
-							<td>{{ tutor.zip_code}}</td>
-							<td>
-								<button>Message</button>
-							</td>
+							<th>Username</th>
+							<th>Institution</th>
+							<th>Tutoring Subjects</th>
+							<th>Requested Pay Rate</th>
+							<th>Chat</th>
 						</tr>
-					{% endfor %}
-				</tbody>
-			</table>
+					</thead>
+					<tbody>
+						{% for tutor in tutors %}
+							<tr style="text-align: center;">
+								<td>{{ tutor.username }}</td>
+								<td>{{ tutor.university.name }} </td>
+								<td>{% for subject in tutor.get_tutor_subjects %}
+										{% if query in subject%}
+											{{ subject }}
+										{% endif %}
+									{% endfor %}</td>
+								<td>{{ tutor.tutoring_pay }}</td>
+								<td>
+									<form method="post" action='{% url 'create_message_group' tutor.username %}'>
+										{% csrf_token %}
+										<button class="anchorbutton" type="submit">Message</button>
+									</form>
+								</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			{% else %}
+				<p>No tutors found for "{{ query }}"</p>
+			{% endif %}
 		{% else %}
-			<p>No tutors found for "{{ query }}"</p>
+				<p>Look up a tutor!</p>
 		{% endif %}
 	</div>
 </div>

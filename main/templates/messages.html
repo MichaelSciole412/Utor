@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2 class="messages" >Your Conversations</h2>
+  <ul class="convos">
+    {% for group in user_groups %}
+      <li class="convo-list"><a class="select-convo" href="{% url 'send_message' group_id=group.id %}">
+        {% for participant in group.users.all %}
+          {{ participant.username }}
+          {% if not forloop.last %} and {% endif %}
+        {% endfor %}
+      </a></li>
+    {% endfor %}
+  </ul>
+{% endblock %}
