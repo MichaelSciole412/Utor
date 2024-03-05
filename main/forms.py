@@ -2,6 +2,7 @@ from django import forms
 from django.core.validators import EmailValidator, RegexValidator, ValidationError, MinLengthValidator
 import re
 from .models import *
+from .misc_utils import *
 
 class LoginForm(forms.Form):
     username = forms.CharField(label="Username", max_length=50)
@@ -57,3 +58,22 @@ class StudyGroupForm(forms.Form):
     subject = forms.CharField(label="Subject", max_length=50, validators=[RegexValidator(regex="^\S.*$", message="Subject must not be blank")])
     course = forms.CharField(label="Course Prefix and Number (optional)", required=False, validators=[RegexValidator(regex="^[A-Za-z_]{2,3} \d{1,5}$", message="Invalid course prefix and number")])
     description = forms.CharField(label="Description", widget=forms.Textarea(attrs={"rows": "5"}))
+
+class GroupPostForm(forms.Form):
+    title = forms.CharField(label="Title", max_length=130, validators=[RegexValidator(regex="^\S.*$", message="Title must not be blank")])
+    image_source = forms.CharField(label="Image Source (Optional)", required=False, max_length=1000)
+    text = forms.CharField(label="Post Text", required=False, widget=forms.Textarea(attrs={"rows": "5"}))
+
+    def clean_image_source(self):
+        image_source = self.cleaned_data["image_source"]
+        if image_source and not is_url_image(image_source):
+            raise ValidationError("Link does not point to image")
+        return image_source
+
+    def clean(self):
+        cleaned_data = super(GroupPostForm, self).clean()
+        image_source = cleaned_data.get("image_source")
+        text = cleaned_data.get("text")
+        if not text and not image_source:
+            raise ValidationError("Post must contain image or text")
+        return cleaned_data

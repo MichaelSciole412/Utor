@@ -1,13 +1,17 @@
 from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseRedirect, Http404, HttpResponseServerError, JsonResponse, HttpRequest, StreamingHttpResponse
+from django.utils.html import escape, format_html, smart_urlquote
 from django.template import loader
 from django.shortcuts import render, redirect, reverse, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
+from django.core.paginator import Paginator
+from django.utils.dateformat import DateFormat
 from .forms import *
 from .models import *
 from django.contrib.auth import authenticate, login as log_in, logout as log_out
 from .misc_utils import *
 from django.core.mail import send_mail
 import time
+import re
 
 # Imports for messaging
 import asyncio
@@ -17,14 +21,14 @@ import random
 
 def create_message_group(request, username):
     user = get_object_or_404(User, username=request.user.username)
-    
+
     tutors = User.objects.filter(username=username)
     tutor = tutors.first()
-    
+
     existing_group = Recipient_Group.objects.filter(users=user).filter(users=tutor).first()
     if existing_group:
         return redirect(reverse("message_page"))
-    
+
     recipient_group = Recipient_Group.objects.create()
     recipient_group.users.add(user, tutor)
     recipient_group.save()
@@ -33,22 +37,22 @@ def create_message_group(request, username):
 def message_page(request):
     user = get_object_or_404(User, username=request.user.username)
     user_groups = Recipient_Group.objects.filter(users=user).all()
-        
+
     return render(request, 'messages.html', {'user_groups': user_groups})
 
 def send_message(request, group_id):
     user = user = get_object_or_404(User, username=request.user.username)
     group = get_object_or_404(Recipient_Group, id=group_id, users=user)
-    
+
     message = request.POST.get('message', '')
-    
+
     if message:
         msg = Message.objects.create(
             text=message,
             creator=user,
         )
         msg.recipents.add(group.id)
-        
+
     return render(request, 'send_message.html', {'group_id': group_id})
 
 
@@ -138,12 +142,25 @@ def profile_by_id(request, user_id):
 def profile(request, username):
     usr = get_object_or_404(User, username=username)
     current_user = usr.username == request.user.username
+    '''if request.method == "POST" and current_user:
+        if request.POST.get("new_subject") is not None:
+            usr.add_student_subject(request.POST.get("new_subject"))
+            return redirect(reverse("profile", kwargs={"username": username}))
+        if request.POST.get("remove_subject") is not None:
+            usr.remove_student_subject(request.POST.get("remove_subject"))
+            return redirect(reverse("profile", kwargs={"username": username}))
+        if request.POST.get("new_tutor_subject") is not None:
+            usr.add_tutor_subject(request.POST.get("new_tutor_subject"))
+            return redirect(reverse("profile", kwargs={"username": username}))
+        if request.POST.get("remove_tutor_subject") is not None:
+            usr.remove_tutor_subject(request.POST.get("remove_tutor_subject"))
+            return redirect(reverse("profile", kwargs={"username": username}))'''
     return render(request, "profile.html", context={"user": usr, "current_user": current_user})
 
 @ensure_authenticated
 def enable_tutoring(request, username=""):
     usr = get_object_or_404(User, username=username)
-    
+
     if request.method == "POST" and usr.username == request.user.username:
         if usr.tutoring_enabled == False:
             usr.tutoring_enabled = True
@@ -164,7 +181,7 @@ def tutor_search(request):
 	filter_type = request.GET.get('filter-type', 'no-filter')
 	filter_query = request.GET.get('filter-query', '')
 	tutors = User.objects.filter(tutor_subjects__icontains=query, tutoring_enabled = True).exclude(username=request.user);
- 
+
 	zip_url = '{}radius.php?key={}&zip={}&radius=5&format=json'.format(ZIP_WISE_API_ENDPOINT, ZIP_WISE_KEY, filter_query)
 	if filter_type == 'username' and filter_query:
 		partials = tutors.filter(username__icontains=filter_query)
@@ -175,7 +192,7 @@ def tutor_search(request):
 			response.raise_for_status()
 		except requests.RequestException as e:
 			return HttpResponseServerError("Internal Server Error")
-  
+
 		if response.status_code == 200:
 			zip_data = response.json()
 			prox_data = zip_data.get('results', [])
@@ -183,27 +200,65 @@ def tutor_search(request):
 			exact_zip = [zip_code for zip_code in zip_codes if zip_code == filter_query]
 			inexact_zip = [zip_code for zip_code in zip_codes if zip_code != filter_query]
 			ordered_prox = exact_zip + inexact_zip
-   
+
 			ordering = Case(
     			*[When(zip_code=zip_code, then=Value(i, output_field=IntegerField())) for i, zip_code in enumerate(ordered_prox)]
 			)
-   
+
 			tutors = tutors.filter(zip_code__in=ordered_prox).order_by(ordering)
-	
+
 	return render(request, 'tutor_search.html', {'tutors': tutors, 'query': query, 'filter_type': filter_type, 'filter_query': filter_query})
 
-
+@csrf_exempt
+@ensure_authenticated
 def study_groups(request):
     my_groups = StudyGroup.objects.filter(user_list=request.user)
     base = StudyGroup.objects.filter(university=request.user.university)
     rec_groups = StudyGroup.objects.none()
-    for subject in request.user.get_student_subjects():
-        rec_groups |= base.filter(subject__iexact=subject).exclude(user_list=request.user)
-    for subject in request.user.get_student_subjects():
-        rec_groups |= base.filter(subject__icontains=subject).exclude(user_list=request.user)
+    search = False
+    if 'search' in request.GET and request.GET.get('search', ''):
+        search = True
+        query = request.GET.get("search", "")
+        if re.match("^[A-Za-z_]{2,3} \d{1,5}$", query):
+            rec_groups |= base.filter(course__iexact=query)
+        if User.objects.filter(username__iexact=query).exists():
+            rec_groups |= base.filter(owner__username__iexact=query)
+        if base.filter(subject__iexact=query).exists():
+            rec_groups |= base.filter(subject__iexact=query)
+        rec_groups |= base.filter(name__iexact=query)
+        rec_groups |= base.filter(name__icontains=query)
+        rec_groups |= base.filter(subject__icontains=query)
+        rec_groups |= base.filter(owner__username__icontains=query)
+    else:
+        for subject in request.user.get_student_subjects():
+            rec_groups |= base.filter(subject__iexact=subject).exclude(user_list=request.user)
+        for subject in request.user.get_student_subjects():
+            rec_groups |= base.filter(name__iexact=subject).exclude(user_list=request.user)
+
+        for subject in request.user.get_student_subjects():
+            rec_groups |= base.filter(subject__icontains=subject).exclude(user_list=request.user)
+        for subject in request.user.get_student_subjects():
+            rec_groups |= base.filter(name__icontains=subject).exclude(user_list=request.user)
 
 
-    return render(request, "study_groups.html", context={"my_groups": my_groups, "rec_groups": rec_groups})
+    p = Paginator(rec_groups, 10)
+    if 'page' in request.GET:
+        page_num = request.GET.get('page')
+        try:
+            page_num = int(page_num)
+        except:
+            pass
+        if page_num not in p.page_range: raise Http404(f"Page {request.GET.get('page')} does not exist")
+        page = p.page(request.GET['page'])
+        for x in page:
+            print(x.name)
+    else:
+        page = p.page(1)
+
+    context = {"my_groups": my_groups, "rec_groups": page, "search": search, "p": p}
+    if 'search' in request.GET and request.GET.get('search', ''): context["query"] = request.GET.get('search', '')
+
+    return render(request, "study_groups.html", context=context)
 
 @ensure_authenticated
 def create_study_group(request):
@@ -227,13 +282,64 @@ def create_study_group(request):
 @ensure_authenticated
 def view_group(request, group_id):
     group = get_object_or_404(StudyGroup, pk=group_id)
-    usr_in_group = request.user in group.user_list.all()
-    return render(request, "view_group.html", context={"group": group, "usr_in_group": usr_in_group})
+    posts = group.grouppost_set.order_by("-time")
+    usr_in_group = group.user_list.contains(request.user)
+    return render(request, "view_group.html", context={"group": group, "usr_in_group": usr_in_group, "posts": posts})
 
 @ensure_authenticated
 def notifications(request):
     notifs = Notification.objects.filter(user=request.user).order_by("-time")
     return render(request, "notifications.html", context={"notifications": notifs})
+
+@ensure_authenticated
+def make_post(request, group_id):
+    group = get_object_or_404(StudyGroup, pk=group_id)
+    if not group.user_list.contains(request.user):
+        return redirect(reverse("view_group", kwargs={"group_id": group_id}))
+    form = GroupPostForm()
+    if request.method == "POST":
+        form = GroupPostForm(request.POST)
+        if form.is_valid():
+            new_post = GroupPost()
+            new_post.poster = request.user
+            new_post.group = group
+            new_post.title = form.cleaned_data["title"]
+            if form.cleaned_data["image_source"]:
+                new_post.image_source = form.cleaned_data["image_source"]
+            new_post.save()
+            if form.cleaned_data["text"]:
+                temp = escape(form.cleaned_data["text"])
+                temp = re.sub("(&[a-z]+;|&#\d+;)", "\n\g<0>\n", temp)
+                temp = re.sub("\[(.+)\]\(((https://|http://|www\.)\S*)\)", "<a class='postlink' href=\"\g<2>\">\g<1></a>", temp)
+                temp = re.sub("((?<!href=\")(?<!href=\"http://)(?<!href=\"https://)(https://|http://|www\.)\S*)", "<a class='postlink' href=\"\g<0>\">\g<0></a>", temp)
+                temp = re.sub("\n(&[a-z]+;|&#\d+;)\n", "\g<1>", temp)
+                temp = re.sub("@[a-zA-Z0-9\-_]{1,50}", user_tag_util(group.id, request.user.username, new_post.id), temp)
+                new_post.text = temp
+            new_post.save()
+
+
+
+            return redirect(reverse("view_group", kwargs={"group_id": group_id}))
+
+    return render(request, "make_post.html", context={"form": form, "group": group})
+
+@ensure_authenticated
+def join_group(request, group_id):
+    group = get_object_or_404(StudyGroup, pk=group_id)
+    if group.invitations.contains(request.user):
+        group.invitations.remove(request.user)
+        group.requests.remove(request.user)
+        group.user_list.add(request.user)
+
+        note = Notification()
+        note.user = group.owner
+        note.n_type = "group"
+        note.title = f"{request.user.username} has joined {group.name}"
+        note.text = f"{request.user.username} has accepted your invitation to join {group.name}"
+        note.regarding_group = group
+        note.save()
+
+    return redirect(reverse("view_group", kwargs={"group_id": group_id}))
 
 ### AJAX
 
@@ -246,7 +352,8 @@ def save_desc(request, group_id):
         group.description = request_data['desc'][:500]
         group.save()
         return HttpResponse("CONFIRM")
-    
+    return HttpResponse("DENY")
+
 @csrf_exempt
 @ensure_authenticated
 def save_bio(request, username=""):
@@ -256,8 +363,8 @@ def save_bio(request, username=""):
         usr.bio = request_data['bio']
         usr.save()
         return HttpResponse("CONFIRM")
-    
-    
+
+
 @csrf_exempt
 @ensure_authenticated
 def save_zip(request, username=""):
@@ -270,7 +377,7 @@ def save_zip(request, username=""):
             response.raise_for_status()
         except requests.RequestException as e:
             return HttpResponseServerError("Internal Server Error")
-        
+
         if response.status_code == 200:
             zip_data = response.json()
             print(zip_data)
@@ -285,21 +392,21 @@ def save_zip(request, username=""):
                 return HttpResponse("ZIP code saved successfully")
 
     return HttpResponseBadRequest("invalid Zip Code")
-	
- 
+
+
 @csrf_exempt
 @ensure_authenticated
 def save_pay(request, username=""):
     if request.method == "POST":
         request_data = json.loads(request.body)
         pay_rate = request_data.get("pay")
-        
+
         if pay_rate is not None:
             usr = get_object_or_404(User, username=username)
             usr.tutoring_pay = pay_rate
             usr.save()
             return HttpResponse("Pay rate saved successfully")
-    
+
     return HttpResponseBadRequest("invalid Pay Rate")
 
 
@@ -391,6 +498,7 @@ def accept_request(request, group_id, user_id):
     new_usr = get_object_or_404(User, pk=user_id)
     if request.user == group.owner and group.requests.contains(new_usr):
         group.requests.remove(new_usr)
+        group.invitations.remove(new_usr)
         group.user_list.add(new_usr)
 
         note = Notification()
@@ -421,4 +529,92 @@ def leave_group(request, group_id):
     if group.user_list.contains(request.user):
         group.user_list.remove(request.user)
         return HttpResponse("CONFIRM")
+    return HttpResponse("DENY")
+
+@csrf_exempt
+@ensure_authenticated
+def kick_user(request):
+    if request.method == "POST":
+        request_data = json.loads(request.body)
+        group = get_object_or_404(StudyGroup, pk=request_data["group_id"])
+        usr = get_object_or_404(User, pk=request_data["user_id"])
+        if request.user == group.owner and usr != group.owner:
+            group.user_list.remove(usr)
+
+            note = Notification()
+            note.user = usr
+            note.title = f"You have been kicked out of {group.name}"
+            note.text = f"{request.user} has kicked you from {group.name}."
+            note.regarding_group = group
+            note.save()
+
+            return JsonResponse({"status": "CONFIRM"})
+    return JsonResponse({"error": "Invalid Request"}, status=400)
+
+@csrf_exempt
+@ensure_authenticated
+def invite(request):
+    if request.method == "POST":
+        request_data = json.loads(request.body)
+        group = get_object_or_404(StudyGroup, pk=request_data["group_id"])
+        if request.user == group.owner:
+            invite_username = request_data["username"]
+            if User.objects.filter(username=invite_username).exists():
+                invite_user = User.objects.get(username=invite_username)
+
+                if group.invitations.contains(invite_user):
+                    return HttpResponse("An invitation has already been sent")
+                if group.user_list.contains(invite_user):
+                    return HttpResponse("This user is already in the group")
+                else:
+                    group.invitations.add(invite_user)
+
+                    note = Notification()
+                    note.user = invite_user
+                    note.n_type = "group"
+                    note.title = f"You have been invited to join {group.name}"
+                    note.text = f"{request.user} has invited you to join {group.name}!  You can accept this request on the study group homepage. Click the link below to go to the study group's homepage."
+                    note.regarding_group = group
+                    note.save()
+
+                    return HttpResponse("Invite Sent!")
+            else:
+                return HttpResponse(f"User {invite_username} does not exist")
+
+    return HttpResponse("DENY")
+
+@csrf_exempt
+@ensure_authenticated
+def make_comment(request):
+    request_data = json.loads(request.body)
+    group = get_object_or_404(StudyGroup, pk=request_data["group_id"])
+    post = get_object_or_404(GroupPost, pk=request_data["post_id"])
+    comment_text = request_data["comment"]
+    if group.user_list.contains(request.user):
+        comment = Comment()
+        comment.author = request.user
+        comment.post = post
+        temp = escape(comment_text)
+        temp = re.sub("(&[a-z]+;|&#\d+;)", "\n\g<0>\n", temp)
+        temp = re.sub("\[(.+)\]\(((https://|http://|www\.)\S*)\)", "<a class='postlink' href=\"\g<2>\">\g<1></a>", temp)
+        temp = re.sub("((?<!href=\")(?<!href=\"http://)(?<!href=\"https://)(https://|http://|www\.)\S*)", "<a class='postlink' href=\"\g<0>\">\g<0></a>", temp)
+        temp = re.sub("\n(&[a-z]+;|&#\d+;)\n", "\g<1>", temp)
+        temp = re.sub("@[a-zA-Z0-9\-_]{1,50}", user_tag_util(group.id, request.user.username, post.id), temp)
+        comment.text = temp
+        comment.save()
+
+        date_formatter = DateFormat(comment.time)
+        time_str = date_formatter.format("n/j/y g:i") + "&nbsp;" + date_formatter.format("A")
+        break_fix_ct = comment.text.replace('\n', '<br/>')
+        response_html = f"""
+                        <div class="comment">
+                            <div class="flexrow center">
+                              <div style="width: 80%;"><h5 style="margin-top: 5px; margin-bottom: 15px;"><a class="userlink" href="/profile/{comment.author.username}/">{ comment.author.username }</a></h5></div>
+                              <div style="text-align: right; font-size: 11px; color: gray; width: 20%;">{time_str}</div>
+                            </div>
+                            { break_fix_ct }
+                        </div>"""
+
+        return HttpResponse(response_html)
+
     return HttpResponse("DENY")

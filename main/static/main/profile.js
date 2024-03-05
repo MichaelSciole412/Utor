@@ -59,10 +59,10 @@ document.addEventListener("DOMContentLoaded", function(){
 				const data = JSON.parse(req.responseText);
 				if (data.status === "CONFIRM")
 				{
-					
+
 					const subjectElement = document.querySelector(`[data-subject="${subject}"]`).closest(".list");
 					console.log("subject to remove", subject);
-					if (subjectElement) 
+					if (subjectElement)
 					{
                         subjectElement.remove();
 						console.log("subject removed");
@@ -106,7 +106,7 @@ document.addEventListener("DOMContentLoaded", function(){
 					newHtml += `</div>`;
 					const listContainer = document.getElementById("add_button");
 
-					if (listContainer) 
+					if (listContainer)
 					{
                         listContainer.insertAdjacentHTML("beforebegin", newHtml);
                         document.getElementById("new_subject").value = "";
@@ -149,7 +149,7 @@ document.addEventListener("DOMContentLoaded", function(){
 
 
 	function removeTutoring(tutoring, user)
-	{	
+	{
 		req = new XMLHttpRequest();
 		req.open("POST", `/ajax/remove_tutoring/${user}/`);
 		req.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
@@ -164,7 +164,7 @@ document.addEventListener("DOMContentLoaded", function(){
 					console.log("status is CONFIRM");
 					const tutoringElement = document.querySelector(`[data-tutoring="${tutoring}"]`).closest(".list");
 					console.log("tutoring subject to remove", tutoring);
-					if (tutoringElement) 
+					if (tutoringElement)
 					{
                         tutoringElement.remove();
                     }
@@ -213,7 +213,7 @@ document.addEventListener("DOMContentLoaded", function(){
 					newHtml += `</div>`;
 					const listContainer = document.getElementById("tut_button");
 
-					if (listContainer) 
+					if (listContainer)
 					{
                         listContainer.insertAdjacentHTML("beforebegin", newHtml);
                         document.getElementById("new_tutoring").value = "";
@@ -241,7 +241,7 @@ function editBio(){
 	b2 = document.getElementById("b2");
 	bio = document.getElementById("bio");
 	bio_text = document.getElementById("bio_text");
-  
+
 	bio_textarea = document.createElement("textarea");
 	bio_textarea.value = unescapeHTML(bio_text.innerHTML);
 	bio_textarea.id = "bio_textarea";
@@ -313,6 +313,7 @@ function saveZip(){
 function savePay(){
 	const payInput = document.getElementById("tutoring_rate");
 	const pay = parseFloat(payInput.value.trim());
+  const payRate = document.getElementById("pay_display");
 	console.log("Pay input: ", pay);
 
 
@@ -322,7 +323,8 @@ function savePay(){
 		req.open("POST", `/ajax/save_pay/${user}/`);
 		req.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
 
-		const payRate = document.getElementById("pay_display");
+
+    console.log(payRate)
 		payRate.innerHTML = `${pay.toFixed(2)}`;
 		payInput.value = "";
 		req.send(JSON.stringify({"pay": pay}));
@@ -332,4 +334,3 @@ function savePay(){
 		console.error("Pay Rate code cannot be empty");
 	}
 }
-

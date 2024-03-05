@@ -108,24 +108,37 @@ class GroupPost(models.Model):
     title = models.CharField(max_length = 130)
     text = models.TextField(null=True, blank=True)
     image_source = models.CharField(max_length=1000, null=True, blank=True)
+    def get_ordered_comments(self):
+        return self.comment_set.order_by("time")
 
 
 class Recipient_Group(models.Model):
     name = models.CharField(max_length=100, default="")
     users = models.ManyToManyField(User, related_name="recipient")
-    
+
     def __str__(self):
         return self.name
+
+
+class Comment(models.Model):
+    author = models.ForeignKey(User, on_delete=models.CASCADE)
+    post = models.ForeignKey(GroupPost, on_delete=models.CASCADE)
+    time = models.DateTimeField(auto_now_add=True)
+    text = models.TextField()
+
+class Conversation(models.Model):
+    conversation_type = models.CharField(max_length=2, choices={"TM": "Tutor Message", "DM": "Direct Message", "GM": "Group Message"})
+    users = models.ManyToManyField(User)
 
 class Message(models.Model):
     time = models.DateTimeField(auto_now_add=True)
     text = models.TextField()
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sent")
     recipents = models.ForeignKey(Recipient_Group, on_delete=models.CASCADE, related_name="recipient")
-    
+
     def __str__(self):
         return f'{self.time} - {self.creator.username}'
-    
+
 
 class Notification(models.Model):
     time = models.DateTimeField(auto_now_add=True)
@@ -135,6 +148,4 @@ class Notification(models.Model):
     text = models.CharField(max_length = 500)
     regarding_group = models.ForeignKey(StudyGroup, null=True, on_delete=models.CASCADE, related_name="gnot_set")
     regarding_user = models.ForeignKey(User, null=True, on_delete=models.CASCADE, related_name="regu_set")
-
-    
-    
+    regarding_post = models.ForeignKey(GroupPost, null=True, on_delete=models.CASCADE, related_name="regp_set")

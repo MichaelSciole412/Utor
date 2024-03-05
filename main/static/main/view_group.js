@@ -1,5 +1,6 @@
 const data = document.currentScript.dataset;
 const groupid = data.groupid;
+const groupname = data.groupname;
 
 function escapeHTML(text) {
     return text
@@ -93,6 +94,7 @@ function reject(id){
 function accept(id, username){
   parentdiv = document.getElementById("requestlist");
   requestdiv = document.getElementById(`request${id}`);
+  invitestuff = document.getElementById("invitestuff");
   parentdiv.removeChild(requestdiv);
 
   num_requests = document.getElementById("num_requests");
@@ -109,12 +111,12 @@ function accept(id, username){
 
   userlist_div = document.getElementById("userlist");
   new_user_div = document.createElement("template");
-  new_user_div.innerHTML = `<div class="list2">
+  new_user_div.innerHTML = `<div class="list2" id="listusr${id}">
                             <div style="width: 90%; padding: 7px; margin-left: 10px;"><a href='/profile/${id}' class="userlink">${username}</a></div>
-                            <button onclick="kick(${id})" style="min-width: 80px;">Kick User</button>
+                            <button onclick="kick(${id}, '${username}')" style="min-width: 80px;">Kick User</button>
                             </div>`
   new_user_div = new_user_div.content.children[0];
-  userlist_div.appendChild(new_user_div);
+  userlist_div.insertBefore(new_user_div, invitestuff);
 
   req = new XMLHttpRequest();
   req.open("POST", `/ajax/accept_request/${groupid}/${id}/`);
@@ -127,5 +129,91 @@ function leave(){
     req.open("POST", `/ajax/leave_group/${groupid}/`);
     req.send();
     location.reload();
+  }
+}
+
+function kick(id, username){
+  if (confirm(`Are you sure you want to kick ${username} from ${groupname}?`)) {
+    userlist = document.getElementById("userlist");
+    userdiv = document.getElementById(`listusr${id}`);
+    userlist.removeChild(userdiv);
+
+    req = new XMLHttpRequest();
+    req.open("POST", `/ajax/kick_user/`);
+    req.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    req.send(JSON.stringify({"group_id": groupid, "user_id": id}));
+  }
+}
+
+function invite(){
+  invite_input = document.getElementById("inviteuser");
+  invite_text = document.getElementById("invite_text");
+  if (invite_input.value != ""){
+    req = new XMLHttpRequest();
+
+    req.open("POST", `/ajax/invite/`);
+    req.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    req.onload = function() {
+          invite_input.value = ""
+          invite_text.innerHTML = this.responseText;
+          setTimeout(function() {
+              invite_text.innerHTML = "";
+          }, 3000);
+      };
+    req.send(JSON.stringify({"group_id": groupid, "username": invite_input.value}));
+  }
+
+}
+
+function toggleComments(id) {
+  var div = document.getElementById("comments" + id);
+  div.classList.toggle("hidden-comments");
+  div.classList.toggle("visible-comments");
+  var button = document.getElementById("togglebutton" + id);
+  if (button.innerHTML == "Show Comments") button.innerHTML = "Hide Comments";
+  else button.innerHTML = "Show Comments";
+  if (div.classList.contains("visible-comments")) {
+    div.style.maxHeight = div.scrollHeight + "px";
+  } else {
+    div.style.maxHeight = null;
+  }
+}
+
+function makeComment(id) {
+  commentsList = document.getElementById("comments" + id);
+  comment_text = document.getElementById("newcommenttext" + id);
+  if (comment_text.value.length < 5) {
+    commentInfo = document.getElementById("commentinfo" + id);
+    commentInfo.style.visibility="visible";
+    setTimeout(function(){
+      commentInfo.style.visibility="hidden";
+    }, 3000);
+  } else {
+    req = new XMLHttpRequest();
+    req.open("POST", `/ajax/make_comment/`);
+    req.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+    req.onload = function() {
+          if (this.responseText != "DENY"){
+            newCommentDiv = document.getElementById("newcommentdiv" + id);
+            new_comment = document.createElement("template");
+
+            new_comment.innerHTML = this.responseText;
+            new_comment = new_comment.content.children[0];
+
+            noneComments = document.getElementById("nonecomments" + id);
+            if (noneComments){
+              commentsList.removeChild(noneComments);
+            }
+
+            commentsList.insertBefore(new_comment, newCommentDiv);
+            comment_text.value = "";
+
+            var div = document.getElementById("comments" + id);
+            div.style.maxHeight = div.scrollHeight + "px";
+          }
+      };
+    req.send(JSON.stringify({"group_id": groupid, "post_id": id, "comment": comment_text.value}));
+
+
   }
 }

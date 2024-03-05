@@ -9,7 +9,11 @@
 <div class="outer">
   <div class="maindiv">
     {% if request.user not in group.user_list.all %}
-      {% if request.user in group.requests.all %}
+      {% if request.user in group.invitations.all %}
+      <div class="join_group" style="float: right;">
+        <a class="anchorbutton" href="{% url 'join_group' group.id %}" style="float: right;">Click to Join</a>
+      </div>
+      {% elif request.user in group.requests.all %}
       <div class="join_group" style="float: right;">
         <button class="clickedbutton" id="joinbutton" style="float: right;">Request Sent</button>
       </div>
@@ -27,7 +31,7 @@
       <h1>{{ group.name }}</h1>
       <h4>Group Owner: <a href="{% url 'profile' group.owner.username %}" class="userlink">{{ group.owner.username }}</a></h4>
     </div>
-    <div class="sidebyside" style="background: #DDF;">
+    <div class="sidebyside" style="background: #DDF; width: 97%; margin: auto;">
       <div class="description innersidebyside" style="background: #E8E8FF;">
         <h3>Description</h3>
         <div id="desc">
@@ -39,15 +43,22 @@
       </div>
       <div class="userlist center innersidebyside">
         <div id="userlist">
-        <h3>User List</h3>
-        {% for usr in group.user_list.all %}
-          <div class="list2">
-            <div style="width: 90%; padding: 7px; margin-left: 10px;"><a href="{% url 'profile' usr.username %}" class="userlink">{{ usr.username }}</a></div>
-            {% if request.user == group.owner and usr != group.owner %}
-              <button style="min-width: 80px;">Kick User</button>
-            {% endif %}
+          <h3>User List</h3>
+          {% for usr in group.user_list.all %}
+            <div class="list2" id="listusr{{ usr.id }}">
+              <div style="width: 90%; padding: 7px; margin-left: 10px;"><a href="{% url 'profile' usr.username %}" class="userlink">{{ usr.username }}</a></div>
+              {% if request.user == group.owner and usr != group.owner %}
+                <button style="min-width: 80px;" onclick="kick({{ usr.id }}, '{{ usr.username }}')">Kick User</button>
+              {% endif %}
+            </div>
+          {% endfor %}
+          {% if request.user == group.owner %}
+          <div class="list2" id="invitestuff">
+            <div style="width: 40%; padding: 3px; margin-left: 10px;"><input type="text" name="inviteuser" id="inviteuser" style="width: 98%;" maxlength=50 placeholder="username"/></div>
+            <div style="width: 20%; text-align: center;"><button style="min-width: 80px; padding: 4px; margin: auto;" onclick="invite();">Send Invite</button></div>
+            <div style="width: 40%; color: #447; word-break: break-all" id="invite_text"></div>
           </div>
-        {% endfor %}
+          {% endif %}
         </div>
         {% if request.user == group.owner %}
         <div id="requestlist">
@@ -65,14 +76,69 @@
             <div style="width: 90%; padding: 7px; margin-left: 10px;">None</div>
           </div>
           {% endif %}
-        {% endif %}
         </div>
+        {% endif %}
       </div>
     </div>
+    {% if request.user in group.user_list.all %}
+    <div class="center text-center" style="margin-bottom: 30px;">
+      <a class="anchorbutton" href="{% url 'make_post' group.id %}">Make Post</a>
+    </div>
+    <div class="grouplist">
+      {% for post in posts %}
+      <div class="cardlist" style="width: 60%; background: #BBD;" id="post{{ post.id }}">
+        <div class="center text-center">
+          <h3 class="center text-center" style="margin-bottom: 5px;">
+            {{ post.title }}
+          </h3>
+          <span class="spanheader">{{ post.time|date:"n/j/y g:i" }}&nbsp;{{ post.time|date:"A" }}</span>
+          <br/>
+          <span class="spanheader">Posted By: <a class="userlink" href="{% url 'profile' post.poster.username %}">{{ post.poster.username }}</a></span>
+        </div>
+        {% if post.image_source %}
+        <div class="center text-center" style="margin-top: 15px;">
+          <img style="width: 80%; margin: auto;" src="{{ post.image_source }}" />
+        </div>
+        {% endif %}
+        {%if post.text %}
+        <div class="posttext">
+          {{ post.text|safe|linebreaks }}
+        </div>
+        {% endif %}
+        <div style="width: 100%; height: 40px;">
+          <button class="anchorbutton" style="float:right;" id="togglebutton{{ post.id }}" onclick="toggleComments({{ post.id }});">Show Comments</button>
+        </div>
+        <div class="center hidden-comments" id="comments{{ post.id }}">
+          {% if not post.get_ordered_comments %}
+          <div class="comment" id="nonecomments{{ post.id }}">No comments</div>
+          {% endif %}
+          {% for comment in post.get_ordered_comments %}
+          <div class="comment">
+            <div class="flexrow center">
+              <div style="width: 80%;"><h5 style="margin-top: 5px; margin-bottom: 15px;"><a class="userlink" href="{% url 'profile' comment.author.username %}">{{ comment.author.username }}</a></h5></div>
+              <div style="text-align: right; font-size: 11px; color: gray; width: 20%;">{{ comment.time|date:"n/j/y g:i" }}&nbsp;{{ comment.time|date:"A" }}</div>
+            </div>
+            {{ comment.text|safe|linebreaks }}
+          </div>
+          {% endfor %}
+          <div id="newcommentdiv{{ post.id }}" class="comment">
+            <textarea style="width: 100%; resize: none;" rows=5 id="newcommenttext{{ post.id }}" placeholder="Make a Comment"></textarea>
+            <br>
+            <div class="flexrow center">
+              <div style="width: 80%; color: red; visibility: hidden;" id="commentinfo{{post.id}}">Comment must be at least 5 characters in length</div>
+              <div style="width: 20%;"><button style="float: right;" onclick="makeComment({{ post.id }});">Make Comment</button></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
   </div>
 </div>
 {% endblock %}
 
 {% block script %}<script src="{% static 'main/view_group.js' %}"
                           defer
-                          data-groupid="{{ group.id }}"></script>{% endblock %}
+                          data-groupid="{{ group.id }}"
+                          data-groupname="{{ group.name }}"></script>{% endblock %}

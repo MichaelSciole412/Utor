@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Post to {{ group.name }}{% endblock %}
+
+{% block content %}
+<div class="outer">
+  <div class="form">
+    <div>
+      <a class="anchorbutton" href="{% url 'view_group' group.id %}">Back</a>
+    </div>
+    <div class="center text-center">
+      <h2>Post to {{ group.name }}</h2>
+    </div>
+    <form class="form" action="{% url 'make_post' group.id %}" method="POST">
+      {% csrf_token %}
+      <table class="form-table">
+      {% for field in form %}
+        <tr>
+          <th valign="top" style="text-align:left;">{{ field.label }}</th>
+          <td class="fullwidth-text-input">{{ field }}</td>
+          <td>
+            {%for error in field.errors %}
+              <p>{{ error }}</p>
+            {% endfor %}
+          </td>
+        </tr>
+      {% endfor %}
+      {% if form.non_field_errors %}
+      <tr>
+        {%for error in form.non_field_errors %}
+          <td class="text-center" colspan="3">{{ error }}</td>
+        {% endfor %}
+      </tr>
+      {% endif %}
+      </table>
+      <div class="center text-center">
+        <input type="submit" value="Submit" />
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
