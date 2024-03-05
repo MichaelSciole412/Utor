@@ -220,15 +220,15 @@ def study_groups(request):
         search = True
         query = request.GET.get("search", "")
         if re.match("^[A-Za-z_]{2,3} \d{1,5}$", query):
-            rec_groups |= base.filter(course__iexact=query)
+            rec_groups |= base.filter(course__iexact=query).exclude(user_list=request.user)
         if User.objects.filter(username__iexact=query).exists():
-            rec_groups |= base.filter(owner__username__iexact=query)
+            rec_groups |= base.filter(owner__username__iexact=query).exclude(user_list=request.user)
         if base.filter(subject__iexact=query).exists():
-            rec_groups |= base.filter(subject__iexact=query)
-        rec_groups |= base.filter(name__iexact=query)
-        rec_groups |= base.filter(name__icontains=query)
-        rec_groups |= base.filter(subject__icontains=query)
-        rec_groups |= base.filter(owner__username__icontains=query)
+            rec_groups |= base.filter(subject__iexact=query).exclude(user_list=request.user)
+        rec_groups |= base.filter(name__iexact=query).exclude(user_list=request.user)
+        rec_groups |= base.filter(name__icontains=query).exclude(user_list=request.user)
+        rec_groups |= base.filter(subject__icontains=query).exclude(user_list=request.user)
+        rec_groups |= base.filter(owner__username__icontains=query).exclude(user_list=request.user)
     else:
         for subject in request.user.get_student_subjects():
             rec_groups |= base.filter(subject__iexact=subject).exclude(user_list=request.user)

@@ -127,6 +127,7 @@ form div {
 
 .submit-button {
   padding: 5px;
+  height: 35px;
 }
 
 .grouplist {
@@ -416,12 +417,6 @@ input.anchorbutton {
 	display: block;
 	margin-top: 8px;
 	text-align: center;
-  }
-
-  input[type="text"],
-  select {
-	width: 50%;
-	margin-bottom: 8px;
   }
 
 
