@@ -44,6 +44,7 @@ EMAIL_USE_SSL = False
 
 INSTALLED_APPS = [
     'daphne',
+    'channels',
     'main.apps.MainConfig',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -54,6 +55,12 @@ INSTALLED_APPS = [
 ]
 
 ASGI_APPLICATION = 'Utor.asgi.application'
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
+    }
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
