@@ -1,19 +1,40 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ group.name }} Chat{% endblock %}
 
 {% block content %}
-  <h2>Send Message to Group</h2>
+<div class="outer">
+  <div class="maindiv">
+    <h3 style="text-align: center;">{{ group.name }} Chat</h3>
+    <div class="sidebyside" style="background: #9BD; width: 95%;">
+      <div class="groupchatouter" style="width: 80%;">
+        <div class="groupchatbox" id="groupchatbox">
+          {% for chat in group.groupchat_set.all %}
+            <div class="chatbox">
+              <div class="flexrow center">
+                <div style="width: 82%;">
+                  <h4 class="nomargin" style="width: 80%;"><a href="{% url 'profile' chat.sender.username %}" class="userlink">{{ chat.sender.username }}</a></h4>
+                </div>
+                <div style="text-align: right; font-size: 11px; color: gray; margin-right: 10px; margin-top: 4px;">{{ chat.time|date:"n/j/y g:i" }}&nbsp;{{ chat.time|date:"A" }}</div>
+              </div>
+              <p>{{ chat.message }}</p>
+              <hr/>
+            </div>
+          {% endfor %}
+        </div>
+        <div class="flexrow">
+          <textarea type="text" id="chatinput" rows="3" style="width: 90%;"></textarea><button style="width: 10%;" onclick="sendMessage();">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
 
-  <form method="post" action="{% url 'send_message' group_id %}">
-    {% csrf_token %}
-    <label for='message'>Message:</label>
-    <textarea id='message' name='message' rows="4" cols="50" required></textarea>
-
-    <br>
-
-    <button type="submit">Send Message</button>
-  </form>
-
-  <br>
-
-  <a href="{% url 'message_page' %}">Back to Conversations</a>
+{% block script %}
+<script src="{% static 'main/group_chat.js' %}"
+                          defer
+                          data-groupid="{{ group.id }}"
+                          data-groupname="{{ group.name }}"></script>
 {% endblock %}

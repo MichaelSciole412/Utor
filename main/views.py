@@ -142,20 +142,11 @@ def profile_by_id(request, user_id):
 def profile(request, username):
     usr = get_object_or_404(User, username=username)
     current_user = usr.username == request.user.username
-    '''if request.method == "POST" and current_user:
-        if request.POST.get("new_subject") is not None:
-            usr.add_student_subject(request.POST.get("new_subject"))
-            return redirect(reverse("profile", kwargs={"username": username}))
-        if request.POST.get("remove_subject") is not None:
-            usr.remove_student_subject(request.POST.get("remove_subject"))
-            return redirect(reverse("profile", kwargs={"username": username}))
-        if request.POST.get("new_tutor_subject") is not None:
-            usr.add_tutor_subject(request.POST.get("new_tutor_subject"))
-            return redirect(reverse("profile", kwargs={"username": username}))
-        if request.POST.get("remove_tutor_subject") is not None:
-            usr.remove_tutor_subject(request.POST.get("remove_tutor_subject"))
-            return redirect(reverse("profile", kwargs={"username": username}))'''
     return render(request, "profile.html", context={"user": usr, "current_user": current_user})
+
+def tutor_profile(request, tutor):
+    tut = User.objects.get(username=tutor)
+    return render(request, "tutor_profile.html", context={"user": tut})
 
 @ensure_authenticated
 def enable_tutoring(request, username=""):

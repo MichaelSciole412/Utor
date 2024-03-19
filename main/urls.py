@@ -10,6 +10,7 @@ urlpatterns = [
 	path("verify_account/<str:email_key>/", views.verify_account, name="verify_account"),
 	path("profile/<int:user_id>/", views.profile_by_id, name="profile_by_id"),
 	path("profile/<str:username>/", views.profile, name="profile"),
+	path("tutor_profile/<str:tutor>/", views.tutor_profile, name='tutor_profile'),
 	path('tutor_search/', views.tutor_search, name='tutor_search'),
 	path('create_message_group/<str:username>', views.create_message_group, name='create_message_group'),
 	path('message_page/', views.message_page, name='message_page'),

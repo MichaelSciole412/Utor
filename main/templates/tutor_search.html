@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block content %}
 
@@ -11,17 +12,18 @@
 			<br>
 			<label for="filter-type">What should we search by?</label>
 			<br>
-			<select class="dropDown" name="filter-type" id="filter-type">
-				<option class="selection" value="no-filter">Everything</option>
+			<select class="dropDown" name="filter-type" id="filter-type" onchange="show_filter()">
+				<option class="selection" value="no-filter">-- No filter --</option>
 				<option class="selection" value="username">Username</option>
 				<option class="selection" value="zip-code">Zip Code</option>
 			</select>
 			<br>
-			<input type="text" name="filter-query" id="filter-query">
+			<div id="filter-disp" style="display: none;">
+				<input type="text" name="filter-query" id="filter-query">
+			</div>
 			<br>
 			<button class="anchorbutton" type="submit">Search</button>
 		</form>
-
 		
 		{% if query %}
 			<h2>Results matching search:</h2>
@@ -32,8 +34,8 @@
 						<tr style="text-align: center;">
 							<th>Username</th>
 							<th>Institution</th>
-							<th>Tutoring Subjects</th>
 							<th>Requested Pay Rate</th>
+							<th>Tutoring Profile</th>
 							<th>Chat</th>
 						</tr>
 					</thead>
@@ -42,12 +44,13 @@
 							<tr style="text-align: center;">
 								<td>{{ tutor.username }}</td>
 								<td>{{ tutor.university.name }} </td>
-								<td>{% for subject in tutor.get_tutor_subjects %}
-										{% if query in subject%}
-											{{ subject }}
-										{% endif %}
-									{% endfor %}</td>
 								<td>{{ tutor.tutoring_pay }}</td>
+								<td>
+									<form method="post" action='{% url 'tutor_profile' tutor.username %}'>
+										{% csrf_token %}
+										<button class="anchorbutton" type="submit">View</button>
+									</form>
+								</td>
 								<td>
 									<form method="post" action='{% url 'create_message_group' tutor.username %}'>
 										{% csrf_token %}
@@ -66,4 +69,8 @@
 		{% endif %}
 	</div>
 </div>
+{% endblock %}
+
+{% block script %}
+	<script src="{% static 'main/tutor_search.js' %}"></script>
 {% endblock %}
