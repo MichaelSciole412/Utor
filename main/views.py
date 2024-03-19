@@ -341,6 +341,13 @@ def join_group(request, group_id):
 
     return redirect(reverse("view_group", kwargs={"group_id": group_id}))
 
+@ensure_authenticated
+def group_chat(request, group_id):
+    group = get_object_or_404(StudyGroup, pk=group_id)
+    if group.user_list.contains(request.user):
+        return render(request, "group_chat.html", context={"group": group})
+    return redirect(reverse("view_group", kwargs={"group_id": group_id}))
+
 ### AJAX
 
 @csrf_exempt

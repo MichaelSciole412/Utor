@@ -149,3 +149,23 @@ class Notification(models.Model):
     regarding_group = models.ForeignKey(StudyGroup, null=True, on_delete=models.CASCADE, related_name="gnot_set")
     regarding_user = models.ForeignKey(User, null=True, on_delete=models.CASCADE, related_name="regu_set")
     regarding_post = models.ForeignKey(GroupPost, null=True, on_delete=models.CASCADE, related_name="regp_set")
+
+class CurrentGroupChatUser(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    group = models.ForeignKey(StudyGroup, on_delete=models.CASCADE)
+
+    @staticmethod
+    def create(user, group):
+        q = CurrentGroupChatUser.objects.filter(user=user, group=group)
+        if q.exists():
+            return
+        newcgu = CurrentGroupChatUser()
+        newcgu.user = user
+        newcgu.group = group
+        newcgu.save()
+
+class GroupChat(models.Model):
+    sender = models.ForeignKey(User, on_delete=models.CASCADE)
+    group = models.ForeignKey(StudyGroup, on_delete=models.CASCADE)
+    time = models.DateTimeField(auto_now_add=True)
+    message = models.TextField()
