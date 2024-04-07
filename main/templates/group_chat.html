@@ -6,7 +6,11 @@
 {% block content %}
 <div class="outer">
   <div class="maindiv">
-    <h3 style="text-align: center;">{{ group.name }} Group Chat</h3>
+    <div class="center">
+      <a style="float: left;" class="anchorbutton" href="{% url 'view_group' group.id %}">Back</a>
+      <h3 style="text-align: center;">{{ group.name }} Group Chat</h3>
+    </div>
+
     <div class="sidebyside" style="background: #9BD; width: 95%;">
       <div class="groupchatouter" style="width: 80%;">
         <div class="groupchatbox" id="groupchatbox">

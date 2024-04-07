@@ -284,7 +284,11 @@ def view_group(request, group_id):
     group = get_object_or_404(StudyGroup, pk=group_id)
     posts = group.grouppost_set.order_by("-time")
     usr_in_group = group.user_list.contains(request.user)
-    return render(request, "view_group.html", context={"group": group, "usr_in_group": usr_in_group, "posts": posts})
+    meetings = Meeting.objects.filter(group=group).filter(time__gt = timezone.now()).order_by("time")
+    next_meeting = False
+    if meetings.exists():
+        next_meeting = meetings[0]
+    return render(request, "view_group.html", context={"group": group, "usr_in_group": usr_in_group, "posts": posts, "next_meeting": next_meeting})
 
 @ensure_authenticated
 def notifications(request):
@@ -346,6 +350,22 @@ def group_chat(request, group_id):
     group = get_object_or_404(StudyGroup, pk=group_id)
     if group.user_list.contains(request.user):
         return render(request, "group_chat.html", context={"group": group})
+    return redirect(reverse("view_group", kwargs={"group_id": group_id}))
+
+@ensure_authenticated
+def schedule(request, group_id, past=False):
+    group = get_object_or_404(StudyGroup, pk=group_id)
+    if group.user_list.contains(request.user):
+        if not past:
+            meeting_list = Meeting.objects.filter(group=group).filter(time__gt = timezone.now()).order_by("time")
+            current_date = datetime.datetime.now().strftime("%Y-%m-%d")
+            return render(request, "schedule.html", context={"group": group, "meeting_list": meeting_list, "current_date": current_date, "past": False})
+        elif past == "past":
+            meeting_list = Meeting.objects.filter(group=group).filter(time__lt = timezone.now()).order_by("-time")
+            current_date = datetime.datetime.now().strftime("%Y-%m-%d")
+            return render(request, "schedule.html", context={"group": group, "meeting_list": meeting_list, "current_date": current_date, "past": True})
+        else:
+            raise Http404()
     return redirect(reverse("view_group", kwargs={"group_id": group_id}))
 
 ### AJAX
@@ -624,4 +644,77 @@ def make_comment(request):
 
         return HttpResponse(response_html)
 
+    return HttpResponse("DENY")
+
+@csrf_exempt
+@ensure_authenticated
+def make_schedule_item(request):
+    request_data = json.loads(request.body)
+    group = get_object_or_404(StudyGroup, pk=request_data["group_id"])
+    if group.owner == request.user:
+        time = request_data['time']
+        date = request_data['date']
+
+        dt = datetime.datetime.strptime(date+" "+time, '%Y-%m-%d %H:%M')
+        dt_aware = timezone.make_aware(dt)
+
+        m = Meeting()
+        m.group = group
+        m.title = request_data['title']
+        m.time = dt_aware
+        m.duration_hours = request_data['duration_hours']
+        m.duration_minutes = request_data['duration_minutes']
+        m.location = request_data['location']
+        m.description = request_data['description']
+        m.save()
+
+        for usr in group.user_list.all():
+            if usr != group.owner:
+                note = Notification()
+                note.user = usr
+                note.n_type = "group"
+                note.title = f"A New Meeting Has Been Scheduled for {group.name}"
+                note.text = f"A new meeting has been scheduled on {dt_aware.strftime('%-m/%-d/%y')} for {group.name}. Click the link below to go to the study group's homepage."
+                note.regarding_group = group
+                note.save()
+
+        return HttpResponse(str(m.id))
+
+    return HttpResponse("DENY");
+
+
+@csrf_exempt
+@ensure_authenticated
+def remove_meeting(request, meeting_id):
+    meeting = get_object_or_404(Meeting, pk=meeting_id)
+    group = meeting.group
+    if request.user == group.owner:
+        for usr in group.user_list.all():
+            if usr != group.owner:
+                note = Notification()
+                note.user = usr
+                note.n_type = "group"
+                note.title = f"A Meeting Has Been Removed From the Schedule For {group.name}"
+                note.text = f"{meeting.title} on {meeting.time.strftime('%-m/%-d/%y')} has been removed from the meeting schedule of {group.name}."
+                note.regarding_group = group
+                note.save()
+        meeting.delete()
+        return HttpResponse("CONFIRM")
+    return HttpResponse("DENY")
+
+@csrf_exempt
+@ensure_authenticated
+def delete_group(request):
+    request_data = json.loads(request.body)
+    group = get_object_or_404(StudyGroup, pk=request_data["group_id"])
+    if request.user == group.owner:
+        for usr in group.user_list.all():
+            if usr != group.owner:
+                note = Notification()
+                note.user = usr
+                note.title = f"A Study Group You Are in Has Been Deleted"
+                note.text = f"User {request.user} has deleted {group.name}.  This study group will no longer appear in your groups list."
+                note.save()
+        group.delete()
+        return HttpResponse("CONFIRM")
     return HttpResponse("DENY")

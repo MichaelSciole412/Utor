@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ group.name }} Meeting Schedule{% endblock %}
+
+{% block content %}
+<div class="outer">
+  <div class="maindiv">
+    <div class="center">
+      <a style="float: left;" class="anchorbutton" href="{% url 'view_group' group.id %}">Back</a>
+      <h1 style="text-align: center;">{{ group.name }} Meeting Schedule</h1>
+      <select id="select_past">
+        <option value="{% url 'schedule_past' group.id 'past' %}" {% if past %}selected{% endif %}>Past Meetings</option>
+        <option value="{% url 'schedule' group.id %}" {% if not past %}selected{% endif %}>Future Meetings</option>
+      </select>
+    </div>
+
+    <div id="schedule-list" class="grid-display">
+      {% for meeting in meeting_list %}
+      <div datetimeorder="{{ meeting.date_orderable_string }}" id="meeting{{ meeting.id }}" class="schedule-item schedule-item-hover">
+        {% if request.user == group.owner and not past %}
+        <div class="flexrow center">
+          <div class="center realllycenter" style="width: 90%;"><h3 style="margin-top: 25px; margin-bottom: 5px; word-wrap: break-word; margin-left: 32px;">{{ meeting.title }}</h3></div>
+          <div style="text-align: right; margin-top: 10px; width: 10%;">
+            <button class="xbutton" onclick="removeMeeting({{ meeting.id }});"><img src="{% static 'main/X_button.png' %}" width=20px/></button>
+          </div>
+        </div>
+        {% else %}
+        <div class="center realllycenter" style="width: 100%;"><h3 style="margin-top: 25px; margin-bottom: 5px; word-wrap: break-word;">{{ meeting.title }}</h3></div>
+        {% endif %}
+        <div class="center realllycenter"><h5 style="margin-top: 5px; margin-bottom: 5px;">{{ meeting.time|date:"n/j/y g:i" }}&nbsp;{{ meeting.time|date:"A" }}</h5></div>
+        <div style="margin-top: auto; margin-bottom: auto;">
+          <table class="schedule-table">
+            <tr>
+              <th>Duration</th>
+              <td>
+                {% if meeting.duration_hours != 0 %}
+                  {{ meeting.duration_hours }} hour{{ meeting.duration_hours|pluralize }}
+                {% endif %}
+                {% if meeting.duration_minutes != 0 %}
+                 {{ meeting.duration_minutes }} minute{{ meeting.duration_minutes|pluralize }}
+                {% endif %}
+               </td>
+            </tr>
+            <tr>
+              <th style="width: 30%;">Location</th>
+              <td style="word-wrap: break-word; width: 70%;">{{ meeting.location }}</td>
+            </tr>
+            <tr>
+              <th>Description</th>
+              <td style="word-wrap: break-word;">{{ meeting.description }}</td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      {% endfor %}
+      {% if request.user == group.owner and not past %}
+      <div id="schedule-item-input-div" class="schedule-item">
+        <div class="center realllycenter"><h3 style="margin-top: 25px; margin-bottom: 0px;">New Meeting</h3></div>
+        <form id="scheduleform">
+        <div style="margin-top: auto; margin-bottom: auto;">
+          <table class="schedule-table">
+            <tr>
+              <th>Title</th>
+              <td><input required id="meet_title" type="text" maxlength="50" style="width: 85%;"/></td>
+            </tr>
+            <tr>
+              <th>Date</th>
+              <td><input required id="meet_date" type="date" min="{{ current_date }}" max="2100-01-01"/></td>
+            </tr>
+            <tr>
+              <th>Time</th>
+              <td><input required id="meet_time" type="time" /></td>
+            </tr>
+            <tr>
+              <th>Duration</th>
+              <td><input required id="meet_duration_hours" type="number" max="24" min="0" /> hours <input required id="meet_duration_minutes" type="number" max="59" min="0" /> minutes</td>
+            </tr>
+            <tr>
+              <th>Location</th>
+              <td><input required id="meet_location" type="text" maxlength="100" style="width: 85%;"/></td>
+            </tr>
+            <tr>
+              <th>Description</th>
+              <td><textarea required id="meet_description" maxlength="500" style="width: 100%; max-height: 70px; height: 50px;"></textarea></td>
+            </tr>
+          </table>
+        </div>
+        <div class="center realllycenter" style="padding: 0px; bottom: 0px;">
+          <input type="submit" id="submit_meet" class="anchorbutton" value="Submit"/>
+        </div>
+        </form>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+{% if request.user == group.owner and not past %}
+<script src="{% static 'main/schedule.js' %}"
+                          defer
+                          data-groupid="{{ group.id }}"></script>
+{% else %}
+<script src="{% static 'main/schedule_nonowner.js' %}"
+                          defer
+                          data-groupid="{{ group.id }}"></script>
+{% endif %}
+{% endblock %}

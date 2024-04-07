@@ -1,5 +1,9 @@
-from django.urls import include, path
+from django.urls import include, path, re_path
 from . import views
+from django.conf import settings
+from django.conf.urls.static import static
+from django.views.static import serve
+
 
 urlpatterns = [
 	path("", views.index, name="index"),
@@ -20,6 +24,8 @@ urlpatterns = [
 	path("groups/view_group/<int:group_id>/", views.view_group, name="view_group"),
 	path("groups/view_group/<int:group_id>/make_post/", views.make_post, name="make_post"),
 	path("groups/view_group/<int:group_id>/group_chat/", views.group_chat, name="group_chat"),
+	path("groups/view_group/<int:group_id>/schedule/", views.schedule, name="schedule"),
+	path("groups/view_group/<int:group_id>/schedule/<str:past>/", views.schedule, name="schedule_past"),
 	path("notifications/", views.notifications, name="notifications"),
 	path("join_group/<int:group_id>/", views.join_group, name="join_group"),
 	path("ajax/save_desc/<int:group_id>/", views.save_desc, name="save_desc"),
@@ -38,4 +44,8 @@ urlpatterns = [
 	path("ajax/kick_user/", views.kick_user, name="kick_user"),
 	path("ajax/invite/", views.invite, name="invite"),
 	path("ajax/make_comment/", views.make_comment, name="make_comment"),
+	path("ajax/schedule/", views.make_schedule_item, name="make_schedule_item"),
+	path("ajax/remove_meeting/<int:meeting_id>/", views.remove_meeting, name="remove_meeting"),
+	path("ajax/delete_group/", views.delete_group, name="delete_group"),
+	re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),
 ]

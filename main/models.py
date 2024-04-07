@@ -1,7 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.utils import timezone
 import json
 import datetime
+import pytz
 
 class University(models.Model):
     name = models.CharField(max_length=150)
@@ -91,14 +93,6 @@ class StudyGroup(models.Model):
     description = models.TextField(null=True, blank=True)
     course = models.CharField(max_length=10, null=True, blank=True)
 
-class Meeting(models.Model):
-    title = models.CharField(max_length=50)
-    meet_time = models.DateTimeField(auto_now_add=False, auto_now=False)
-    description = models.TextField(null=True, blank=True)
-    group = models.ForeignKey(StudyGroup, on_delete=models.CASCADE)
-
-    def has_passed(self):
-        return self.meet_time < datetime.datetime.now()
 
 
 class GroupPost(models.Model):
@@ -169,3 +163,19 @@ class GroupChat(models.Model):
     group = models.ForeignKey(StudyGroup, on_delete=models.CASCADE)
     time = models.DateTimeField(auto_now_add=True)
     message = models.TextField()
+
+class Meeting(models.Model):
+    group = models.ForeignKey(StudyGroup, on_delete=models.CASCADE)
+    title = models.CharField(max_length=50)
+    time = models.DateTimeField(auto_now_add=False)
+    duration_hours = models.IntegerField(default=0)
+    duration_minutes = models.IntegerField(default=0)
+    location = models.CharField(max_length=100)
+    description = models.CharField(max_length=400)
+
+    def has_passed(self):
+        return self.meet_time < datetime.datetime.now()
+
+    def date_orderable_string(self):
+        epoch = timezone.make_aware(datetime.datetime.utcfromtimestamp(0))
+        return int((self.time - epoch).total_seconds())
