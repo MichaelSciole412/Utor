@@ -12,7 +12,7 @@ from .misc_utils import *
 from django.core.mail import send_mail
 import time
 import re
-
+from django.db.models import Avg
 # Imports for messaging
 import asyncio
 from typing import AsyncGenerator
@@ -56,9 +56,35 @@ def send_message(request, group_id):
     return render(request, 'send_message.html', {'group_id': group_id})
 
 
+def review_page(request, tutor):
+    print(tutor)
+    print(request.user)
+    tutor_user = get_object_or_404(User, username=tutor)
+    reviews = Review.objects.filter(reviewed=tutor_user, reviewer=request.user)
+    
+    if not reviews:
+        review = Review.objects.create(
+				reviewer=request.user,
+				reviewed=tutor_user,
+				overall=0,
+				effective=0,
+				timeliness=0,
+				patience=0,
+				knowledge=0
+			)
+    else:
+        review = reviews[0]
+        
+    return render(request, 'review.html', {'tutor': tutor_user, 'review': review})
 
-
-
+def user_reviews(request, username):
+    current_user = get_object_or_404(User, username=username)
+    received_reviews = Review.objects.filter(reviewed=current_user)
+    context = {
+        'request_user': request.user,
+        'received_reviews': received_reviews
+    }
+    return render(request, 'view_reviews.html', context)
 
 @ensure_authenticated
 def index(request):
@@ -197,7 +223,12 @@ def tutor_search(request):
 			)
 
 			tutors = tutors.filter(zip_code__in=ordered_prox).order_by(ordering)
-
+    
+	for tutor in tutors:
+		reviews = Review.objects.filter(reviewed=tutor).exclude(overall=0)
+		tutor.average_rating = reviews.aggregate(Avg('overall'))['overall__avg']
+		print(tutor.username, " ", tutor.average_rating)
+  
 	return render(request, 'tutor_search.html', {'tutors': tutors, 'query': query, 'filter_type': filter_type, 'filter_query': filter_query})
 
 @csrf_exempt
@@ -343,6 +374,61 @@ def group_chat(request, group_id):
 
 @csrf_exempt
 @ensure_authenticated
+def setOverall(request, tutor):
+    tutor_user = get_object_or_404(User, username=tutor)
+    reviews = Review.objects.filter(reviewed=tutor_user, reviewer=request.user)
+    if reviews.exists():
+        overall_rating = json.loads(request.body).get("overall")
+        reviews.update(overall=overall_rating)
+        return HttpResponse("CONFIRM")
+    return HttpResponse("DENY")
+
+@csrf_exempt
+@ensure_authenticated
+def setEffective(request, tutor):
+    tutor_user = get_object_or_404(User, username=tutor)
+    reviews = Review.objects.filter(reviewed=tutor_user, reviewer=request.user)
+    if reviews.exists():
+        effective_rating = json.loads(request.body).get("effective")
+        reviews.update(effective=effective_rating)
+        return HttpResponse("CONFIRM")
+    return HttpResponse("DENY")
+
+@csrf_exempt
+@ensure_authenticated
+def setTime(request, tutor):
+    tutor_user = get_object_or_404(User, username=tutor)
+    reviews = Review.objects.filter(reviewed=tutor_user, reviewer=request.user)
+    if reviews.exists():
+        time_rating = json.loads(request.body).get("timeliness")
+        reviews.update(timeliness=time_rating)
+        return HttpResponse("CONFIRM")
+    return HttpResponse("DENY")
+
+@csrf_exempt
+@ensure_authenticated
+def setPatience(request, tutor):
+    tutor_user = get_object_or_404(User, username=tutor)
+    reviews = Review.objects.filter(reviewed=tutor_user, reviewer=request.user)
+    if reviews.exists():
+        patience_rating = json.loads(request.body).get("patience")
+        reviews.update(patience=patience_rating)
+        return HttpResponse("CONFIRM")
+    return HttpResponse("DENY")
+
+@csrf_exempt
+@ensure_authenticated
+def setKnowledge(request, tutor):
+    tutor_user = get_object_or_404(User, username=tutor)
+    reviews = Review.objects.filter(reviewed=tutor_user, reviewer=request.user)
+    if reviews.exists():
+        knowledge_rating = json.loads(request.body).get("knowledge")
+        reviews.update(knowledge=knowledge_rating)
+        return HttpResponse("CONFIRM")
+    return HttpResponse("DENY")
+
+@csrf_exempt
+@ensure_authenticated
 def save_desc(request, group_id):
     request_data = json.loads(request.body)
     group = get_object_or_404(StudyGroup, pk=group_id)
@@ -378,10 +464,9 @@ def save_zip(request, username=""):
 
         if response.status_code == 200:
             zip_data = response.json()
-            print(zip_data)
             is_error = zip_data.get('results', [])
             if 'error' in is_error:
-                msg = is_error['error]']
+                msg = is_error['error']
                 return HttpResponseBadRequest("{msg}")
             else:
                 usr = get_object_or_404(User, username=username)

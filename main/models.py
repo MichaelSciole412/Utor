@@ -32,6 +32,7 @@ class User(AbstractUser):
     email_key = models.CharField(max_length=50, unique=True)
     tutoring_enabled = models.BooleanField(default=False)
     tutoring_pay = models.DecimalField(null=True, decimal_places=2, max_digits=4, default=0.00)
+    average_rating = models.DecimalField(null=True, decimal_places=2, max_digits=3, default=0.00)
     zip_code = models.IntegerField(null=True, default=28607)
 
     def get_tutor_subjects(self):
@@ -169,3 +170,13 @@ class GroupChat(models.Model):
     group = models.ForeignKey(StudyGroup, on_delete=models.CASCADE)
     time = models.DateTimeField(auto_now_add=True)
     message = models.TextField()
+    
+class Review(models.Model):
+    reviewer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='given_reviews')
+    reviewed = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_reviews')
+    overall = models.IntegerField(null=False, default=5)
+    effective = models.IntegerField(null=False, default=5)
+    timeliness = models.IntegerField(null=False, default=5)
+    patience = models.IntegerField(null=False, default=5)
+    knowledge = models.IntegerField(null=False, default=5)
+    created_at = models.DateTimeField(auto_now_add=True)

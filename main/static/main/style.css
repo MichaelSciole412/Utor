@@ -535,3 +535,49 @@ h4.nomargin {
   margin-top: 5px;
   margin-bottom: 5px;
 }
+
+#rating_bar {
+	width: 100px;
+	height: 100px;
+	margin: 4px 175px !important;
+	display: inline-block;
+	display: inline;
+	unicode-bidi: bidi-override;
+	direction: rtl;
+	white-space: nowrap;
+  }
+  
+  #rating_bar>span:before {
+	content: '\2605';
+	align-content: center;
+	color: #c7c5c5;
+	height: 100px;
+	width: 100px;
+	cursor: pointer;
+	font-size: 3em;
+  }
+  
+  #rating_bar>span:hover:before,
+  #rating_bar span:hover~span:before {
+	color: #ffd700;
+  }
+
+  #rating_bar .overall_rating.selected:before {
+    color: #85754E;
+  }
+
+#rating_bar .timeliness_rating.selected:before {
+    color: #85754E;
+  }
+
+#rating_bar .patience_rating.selected:before {
+    color: #85754E;
+  }
+
+#rating_bar .knowledge_rating.selected:before {
+    color: #85754E;
+  }
+
+#rating_bar .effective_rating.selected:before {
+    color: #85754E;
+  }

@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Reviews for {{user.username}}{% endblock %}
+
+{% block content %}
+    {% if received_reviews %}
+        <ul>
+            {% for review in received_reviews %}
+                <li>
+					<strong>Reviewer:</strong> {{ review.reviewer }} <br>
+					<strong>Created On:</strong> {{ review.created_at }} <br>
+                    <strong>Overall Rating:</strong> {{ review.overall }} <br>
+                    <strong>Effective Rating:</strong> {{ review.effective }} <br>
+                    <strong>Timeliness Rating:</strong> {{ review.timeliness }} <br>
+                    <strong>Patience Rating:</strong> {{ review.patience }} <br>
+                    <strong>Knowledge Rating:</strong> {{ review.knowledge }}
+                    {% comment %} 
+					I would like to see if we can get the numbers to 
+					show up as stars to make it look a bit nicer 
+					{% endcomment %}
+                </li>
+				<br>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No reviews found.</p>
+    {% endif %}
+</body>
+{% endblock %}

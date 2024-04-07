@@ -67,6 +67,12 @@
 			</td>
 		</tr>
 	</table>
+	<div>
+		<form method="post" action='{% url 'review_page' user.username %}'>
+			{% csrf_token %}
+			<button class="anchorbutton" type="submit">Submit a Review</button>
+		</form>
+	</div>
   </div>
 </div>
 {% endblock %}

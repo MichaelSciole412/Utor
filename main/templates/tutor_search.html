@@ -37,6 +37,7 @@
 							<th>Requested Pay Rate</th>
 							<th>Tutoring Profile</th>
 							<th>Chat</th>
+							<th>Average Rating</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -56,6 +57,13 @@
 										{% csrf_token %}
 										<button class="anchorbutton" type="submit">Message</button>
 									</form>
+								</td>
+								<td>
+									{% if tutor.average_rating %}
+										{{ tutor.average_rating }} out of 5.0 stars
+									{% else %}
+										No reviews yet
+									{% endif %}
 								</td>
 							</tr>
 						{% endfor %}

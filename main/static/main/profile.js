@@ -313,7 +313,7 @@ function saveZip(){
 function savePay(){
 	const payInput = document.getElementById("tutoring_rate");
 	const pay = parseFloat(payInput.value.trim());
-  const payRate = document.getElementById("pay_display");
+  	const payRate = document.getElementById("pay_display");
 	console.log("Pay input: ", pay);
 
 
@@ -322,9 +322,6 @@ function savePay(){
 		req = new XMLHttpRequest();
 		req.open("POST", `/ajax/save_pay/${user}/`);
 		req.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
-
-
-    console.log(payRate)
 		payRate.innerHTML = `${pay.toFixed(2)}`;
 		payInput.value = "";
 		req.send(JSON.stringify({"pay": pay}));
