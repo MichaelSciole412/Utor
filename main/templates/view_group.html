@@ -6,7 +6,9 @@
 
 
 {% block content %}
+
 <div class="outer">
+
   <div class="maindiv">
     {% if request.user not in group.user_list.all %}
       {% if request.user in group.invitations.all %}
@@ -26,11 +28,59 @@
     <div class="join_group" style="float: right;">
       <button class="anchorbutton" style="float: right;" onclick="leave();">Leave Group</button>
     </div>
+    {% elif request.user == group.owner %}
+    <div class="join_group" style="float: right;">
+      <button class="anchorbutton" style="float: right; background: #F55;" onclick="deleteGroup();">Delete Group</button>
+    </div>
     {% endif %}
     <div class="center text-center">
       <h1>{{ group.name }}</h1>
       <h4>Group Owner: <a href="{% url 'profile' group.owner.username %}" class="userlink">{{ group.owner.username }}</a></h4>
     </div>
+    {% if usr_in_group %}
+    <div class="center">
+      <div style="width: 50%; height: 40px; background: #BBF; margin: auto; justify-content: center; border-radius: 10px;" class="flexrow">
+        <div class="sglink">
+          <a class="linktype2" href="{% url 'group_chat' group.id %}">Group Chat</a>
+        </div>
+        <div class="sglink">
+          <a class="linktype2" href="{% url 'schedule' group.id %}">Meeting Schedule</a>
+        </div>
+      </div>
+      {% if next_meeting %}
+      <div style="width: 25%; min-height: 400px; background: #BBF; margin: auto; justify-content: center; border-radius: 10px; padding-top: 10px; padding-bottom:10px; margin-top: 10px; display: flex; flex-direction: column;">
+        <div style="text-align: center;"><h3 style="margin-top: 0px; margin-bottom: 10px;">Next Meeting</h3></div>
+        <div class="schedule-item" style="margin: auto; width: 96%;">
+          <div class="center realllycenter" style="width: 100%;"><h3 style="margin-top: 25px; margin-bottom: 5px; word-wrap: break-word;">{{ next_meeting.title }}</h3></div>
+          <div class="center realllycenter"><h5 style="margin-top: 5px; margin-bottom: 5px;">{{ next_meeting.time|date:"n/j/y g:i" }}&nbsp;{{ next_meeting.time|date:"A" }}</h5></div>
+          <div style="margin-top: auto; margin-bottom: auto;">
+            <table class="schedule-table">
+              <tr>
+                <th>Duration</th>
+                <td>
+                  {% if next_meeting.duration_hours != 0 %}
+                    {{ next_meeting.duration_hours }} hour{{ next_meeting.duration_hours|pluralize }}
+                  {% endif %}
+                  {% if next_meeting.duration_minutes != 0 %}
+                   {{ next_meeting.duration_minutes }} minute{{ next_meeting.duration_minutes|pluralize }}
+                  {% endif %}
+                 </td>
+              </tr>
+              <tr>
+                <th style="width: 30%;">Location</th>
+                <td style="word-wrap: break-word; width: 70%;">{{ next_meeting.location }}</td>
+              </tr>
+              <tr>
+                <th>Description</th>
+                <td style="word-wrap: break-word;">{{ next_meeting.description }}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
     <div class="sidebyside" style="background: #DDF; width: 97%; margin: auto;">
       <div class="description innersidebyside" style="background: #E8E8FF;">
         <h3>Description</h3>
@@ -141,4 +191,5 @@
 {% block script %}<script src="{% static 'main/view_group.js' %}"
                           defer
                           data-groupid="{{ group.id }}"
-                          data-groupname="{{ group.name }}"></script>{% endblock %}
+                          data-groupname="{{ group.name }}"
+                          data-studygroups_link="{% url 'study_groups' %}"></script>{% endblock %}

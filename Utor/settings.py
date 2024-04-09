@@ -13,9 +13,10 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 import certifi, os
 
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+STATIC_ROOT = BASE_DIR / 'static'
 
 AUTH_USER_MODEL = 'main.User'
 
@@ -26,9 +27,9 @@ AUTH_USER_MODEL = 'main.User'
 SECRET_KEY = 'django-insecure-o6rb3%$#c=4631_j5#fnt2^7opo+zi(zj(p6=8wik)jp1)^@%1'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # Email Stuff
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
@@ -70,6 +71,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "whitenoise.middleware.WhiteNoiseMiddleware",
 ]
 
 ROOT_URLCONF = 'Utor.urls'
