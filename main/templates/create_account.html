@@ -2,6 +2,8 @@
 
 {% block title %}Create Account{% endblock %}
 
+{% load static %}
+
 {% block content %}
 <div class="outer">
   <div class="form smallform">
@@ -28,6 +30,10 @@
         </tr>
       {% endfor %}
       </table>
+    <div>
+      <p><input type="checkbox" required /> I agree to Utor's <a href="{% static 'Terms_of_Service.txt' %}">Terms of Service</a></p>
+      <p><input type="checkbox" required /> I agree to Utor's <a href="{% static 'Privacy_Policy.txt' %}">Privacy Policy</a></p>
+    </div>
     <div class="center text-center">
       <input type="submit" value="Submit" class="anchorbutton" />
     </div>

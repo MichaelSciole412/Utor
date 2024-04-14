@@ -12,6 +12,8 @@ from .misc_utils import *
 from django.core.mail import send_mail
 import time
 import re
+import requests
+from django.db.models import Case, When, Value, IntegerField
 
 # Imports for messaging
 import asyncio
@@ -172,9 +174,6 @@ def enable_tutoring(request, username=""):
 
 ZIP_WISE_KEY = 'atue9sehje6s9kav'
 ZIP_WISE_API_ENDPOINT = 'https://www.zipwise.com/webservices/'
-import requests
-from django.db.models import Case, When, Value, IntegerField
-
 @ensure_authenticated
 def tutor_search(request):
 	query = request.GET.get('subject', '')
