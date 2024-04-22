@@ -53,6 +53,14 @@
 		<div class="{% if user.tutoring_enabled %}maindiv{% else %}hidden{% endif %}" name="tutoring-section">
 			<table>
 				<tr>
+					<td>
+						<form method="post" action="{% url 'user_reviews' user.username %}">
+							{% csrf_token %}
+							<button class="anchorbutton" type="submit">View User Reviews</button>
+						<form>
+					</td>
+				</tr>
+				<tr>
 					<th valign=top>Currently Tutoring
 						<p>enter exact course title<br>(ex. Calculus 2)</p>
 					</th>
@@ -67,7 +75,7 @@
 					{% endfor %}
 					{% if current_user %}
 						<div class="list" id="tut_button">
-							<input class="text-input" type="text" id="new_tutoring" name="new_tutoring" required />
+							<input class="text-input" type="text" id="new_tutoring" name="new_tutoring" />
 							<button class="add-tut-button">Add Subject</button>
 						</div>
 					{% endif %}
@@ -109,14 +117,6 @@
 					<td colspan="2" class="text-center">
 						<p>{{ user.username}}'s Current Tutoring Rate: $<span id="pay_display">{{ user.tutoring_pay }}</span></p>
 					</td>
-				</tr>
-				<tr>
-					{% comment %} <form action="{% url 'user_reviews' user.username %}">
-						{% csrf_token %}
-						<button class="anchorbutton">View User Reviews</button>
-					<form>
-						for some reason this forces the enable button to go to the same url path instead of what its supposed to do
-						{% endcomment %}
 				</tr>
 			</table>
 		</div>

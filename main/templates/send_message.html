@@ -1,16 +1,16 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}{{ group.name }} Chat{% endblock %}
+{% block title %}{{ dmid.dmid }} Chat{% endblock %}
 
 {% block content %}
 <div class="outer">
   <div class="maindiv">
-    <h3 style="text-align: center;">{{ group.name }} Chat</h3>
+    <h3 style="text-align: center;">Chat</h3>
     <div class="sidebyside" style="background: #9BD; width: 95%;">
       <div class="groupchatouter" style="width: 80%;">
         <div class="groupchatbox" id="groupchatbox">
-          {% for chat in group.groupchat_set.all %}
+          {% for chat in dmid.all_messages %}
             <div class="chatbox">
               <div class="flexrow center">
                 <div style="width: 82%;">
@@ -33,8 +33,7 @@
 {% endblock %}
 
 {% block script %}
-<script src="{% static 'main/group_chat.js' %}"
+<script src="{% static 'main/direct_messaging.js' %}"
                           defer
-                          data-groupid="{{ group.id }}"
-                          data-groupname="{{ group.name }}"></script>
+                          data-dmid="{{ dmid.dmid }}"></script>
 {% endblock %}

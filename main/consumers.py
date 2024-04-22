@@ -7,7 +7,7 @@ from django.utils.dateformat import DateFormat
 from django.utils import timezone
 from datetime import datetime
 
-class GroupChatConsumer(WebsocketConsumer):
+class GroupChatConsumer((WebsocketConsumer)):
     def connect(self):
         self.accept()
         self.group_id = self.scope['url_route']['kwargs']['group_id']
@@ -74,3 +74,87 @@ class GroupChatConsumer(WebsocketConsumer):
     def group_chat_leave(self, event):
         id_to_delete = event['id_to_delete']
         self.send(text_data=json.dumps({'type': 'leave', 'id_to_delete': id_to_delete}))
+        
+class DMConsumer(WebsocketConsumer):
+	def connect(self):
+		self.accept()
+		self.dm_id = self.scope['url_route']['kwargs']['dmid']
+		self.room_dm_name = "dm_room" + str(self.dm_id)
+		self.user = self.scope["user"]
+
+		async_to_sync(self.channel_layer.group_add)(self.room_dm_name, self.channel_name)
+
+		async_to_sync(self.channel_layer.group_send)(self.room_dm_name, {
+			'type': 'group_chat_join',
+			'html': f'<div id="user{self.user.id}"><a class="userlink" href="/profile/{self.user.username}/">{self.user.username}</a><hr/></div>',
+			'check_id': f"user{self.user.id}"
+		})
+
+		# dm = Recipient_Group.objects.get(dmid=self.dm_id)
+		# CurrentDMUser.create(self.user, dm)
+        
+	def receive(self, text_data):
+		text_data_json = json.loads(text_data)
+		username = self.user.username
+
+		m = Message()
+		m.sender = self.user
+		m.dmid = Recipient_Group.objects.get(dmid=self.dm_id).dmid
+		m.message = text_data_json['message']
+		m.save()
+
+		async_to_sync(self.channel_layer.group_send)(self.room_dm_name, {
+			'type': 'group_chat_message',
+			'message': text_data_json['message'],
+			'username': username,
+			'chatobj': m
+		})
+   
+	def group_chat_message(self, event):
+		message = event['message']
+		username = event['username']
+		date_formatter = DateFormat(datetime.now())
+		time_str = date_formatter.format("n/j/y g:i") + "&nbsp;" + date_formatter.format("A")
+		raw_html = f"""<div class="chatbox">
+						<div class="flexrow center">
+						<div style="width: 82%;">
+							<h4 class="nomargin" style="width: 80%;"><a href="/profile/{username}" class="userlink">{username}</a></h4>
+						</div>
+						<div style="text-align: right; font-size: 11px; color: gray; margin-right: 10px; margin-top: 4px;">{time_str}</div>
+						</div>
+						<p>{escape(message)}</p>
+						<hr/>
+						</div>"""
+   
+		self.send(text_data=json.dumps({'type': 'chat', 'html': raw_html}))
+  
+		# connected_users = CurrentDMUser.objects.filter(dm__id=self.dm_id).exclude(user=self.user)
+		# if not connected_users.exists():
+		# 	Notification.objects.create(
+		# 		user=self.user,
+		# 		n_type='Chat',
+		# 		title='New Chat Notification',
+		# 		text= f'You have recived a message from {username}',
+		# 		regarding_group=None,
+		# 		regarding_user=None,
+		# 		regarding_post=None
+		# 	)
+   
+   
+	def group_chat_join(self, event):
+		html = event['html']
+		self.send(text_data=json.dumps({'type': 'join', 'html': html, 'check_id': event['check_id']}))
+  
+  
+	def disconnect(self, close_code):
+		# dm = Recipient_Group.objects.get(dmid=self.dm_id)
+		# CurrentDMUser.objects.filter(user=self.user, dmid=dm.dmid).delete()
+
+		async_to_sync(self.channel_layer.group_send)(self.room_dm_name, {
+			'type': 'group_chat_leave',
+			'id_to_delete': "user" + str(self.user.id)
+		})
+
+	def group_chat_leave(self, event):
+		id_to_delete = event['id_to_delete']
+		self.send(text_data=json.dumps({'type': 'leave', 'id_to_delete': id_to_delete}))

@@ -56,3 +56,9 @@ def user_tag_util(group_id, request_username, post_id):
         else:
             return s_match.group()
     return check_and_notify
+
+def dm_id_gen(u1, u2):
+    ul = [u1.id, u2.id]
+    ul.sort()
+    ul =list(map(str, ul))
+    return "_".join(ul)

@@ -21,44 +21,35 @@ import random
 
 def create_message_group(request, username):
     user = get_object_or_404(User, username=request.user.username)
-
     tutors = User.objects.filter(username=username)
     tutor = tutors.first()
+    
+    dmid = dm_id_gen(tutor, user)
 
-    existing_group = Recipient_Group.objects.filter(users=user).filter(users=tutor).first()
+    existing_group = Recipient_Group.objects.filter(dmid=dmid).first()
     if existing_group:
         return redirect(reverse("message_page"))
 
-    recipient_group = Recipient_Group.objects.create()
-    recipient_group.users.add(user, tutor)
+    recipient_group = Recipient_Group()
+    recipient_group.tutor = tutor.username
+    recipient_group.student = user.username
+    recipient_group.dmid = dmid
     recipient_group.save()
     return redirect(reverse("message_page"))
 
 def message_page(request):
     user = get_object_or_404(User, username=request.user.username)
-    user_groups = Recipient_Group.objects.filter(users=user).all()
+    user_dms = Recipient_Group.objects.filter(dmid__icontains=user.id).all()
 
-    return render(request, 'messages.html', {'user_groups': user_groups})
+    return render(request, 'messages.html', {'user_dms': user_dms})
 
-def send_message(request, group_id):
-    user = user = get_object_or_404(User, username=request.user.username)
-    group = get_object_or_404(Recipient_Group, id=group_id, users=user)
-
-    message = request.POST.get('message', '')
-
-    if message:
-        msg = Message.objects.create(
-            text=message,
-            creator=user,
-        )
-        msg.recipents.add(group.id)
-
-    return render(request, 'send_message.html', {'group_id': group_id})
+def send_message(request, dmid):
+    dmid = Recipient_Group.objects.filter(dmid=dmid).all().first()
+    print(dmid.dmid)
+    return render(request, 'send_message.html', {'dmid': dmid})
 
 
 def review_page(request, tutor):
-    print(tutor)
-    print(request.user)
     tutor_user = get_object_or_404(User, username=tutor)
     reviews = Review.objects.filter(reviewed=tutor_user, reviewer=request.user)
     
@@ -227,7 +218,6 @@ def tutor_search(request):
 	for tutor in tutors:
 		reviews = Review.objects.filter(reviewed=tutor).exclude(overall=0)
 		tutor.average_rating = reviews.aggregate(Avg('overall'))['overall__avg']
-		print(tutor.username, " ", tutor.average_rating)
   
 	return render(request, 'tutor_search.html', {'tutors': tutors, 'query': query, 'filter_type': filter_type, 'filter_query': filter_query})
 

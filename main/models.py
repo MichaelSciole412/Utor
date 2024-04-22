@@ -108,12 +108,12 @@ class GroupPost(models.Model):
 
 
 class Recipient_Group(models.Model):
-    name = models.CharField(max_length=100, default="")
-    users = models.ManyToManyField(User, related_name="recipient")
-
-    def __str__(self):
-        return self.name
-
+    dmid = models.CharField(max_length=100, unique=True)
+    student = models.CharField(max_length=100, default="")
+    tutor = models.CharField(max_length=100, default="")
+    
+    def all_messages(self):
+        return Message.objects.filter(dmid=self.dmid).order_by("time")
 
 class Comment(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -126,13 +126,10 @@ class Conversation(models.Model):
     users = models.ManyToManyField(User)
 
 class Message(models.Model):
+    sender = models.ForeignKey(User, on_delete=models.CASCADE)
+    dmid = models.CharField(max_length=100)
     time = models.DateTimeField(auto_now_add=True)
-    text = models.TextField()
-    creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name="sent")
-    recipents = models.ForeignKey(Recipient_Group, on_delete=models.CASCADE, related_name="recipient")
-
-    def __str__(self):
-        return f'{self.time} - {self.creator.username}'
+    message = models.TextField()
 
 
 class Notification(models.Model):
@@ -158,6 +155,20 @@ class CurrentGroupChatUser(models.Model):
         newcgu.user = user
         newcgu.group = group
         newcgu.save()
+        
+class CurrentDMUser(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    dm = models.ForeignKey(Recipient_Group, on_delete=models.CASCADE)
+
+    @staticmethod
+    def create(user, dm):
+        q = CurrentDMUser.objects.filter(user=user, dmid=dm.dmid)
+        if q.exists():
+            return
+        newdmu = CurrentDMUser()
+        newdmu.user = user
+        newdmu.dmid = dm.dmid
+        newdmu.save()
 
 class GroupChat(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE)
