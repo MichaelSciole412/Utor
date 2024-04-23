@@ -19,7 +19,7 @@
 			<th>University</th>
 			<td>{{ user.university.name }}</td>
 		</tr>
-		<tr> 
+		<tr>
 			<th>Bio</th>
 			<td class = "list">
 				<div id="bio">
@@ -104,10 +104,10 @@
 						</div>
 					</td>
 				</tr>
-			
+
 				<tr>
 					<td colspan="2" class="text-center">
-						<p>{{ user.username}}'s Current Tutoring Rate: $<span id="pay_display">{{ user.tutoring_pay }}</span></p>
+						<p>{{ user.username}}'s Current Tutoring Rate: {% if user.tutoring_pay != None %}$<span id="pay_display">{{ user.tutoring_pay }}</span>{% else %}<span id="pay_display">This user has not set a payment rate</span>{% endif %}</p>
 					</td>
 				</tr>
 				<tr>
@@ -134,6 +134,6 @@
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script src="{% static 'main/profile.js' %}"
                           defer
-                          data-username="{{ user.username }}" 
+                          data-username="{{ user.username }}"
 						  data-zip="{{user.zip_code}}"
 						  data-pay="{{user.tutoring_pay}}"></script>{% endblock %}
