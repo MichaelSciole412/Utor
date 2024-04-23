@@ -1,13 +1,96 @@
 {% extends 'base.html' %}
-
+{% load static %}
 
 {% block title %}Home{% endblock %}
 
 {% block content %}
 <div class="outer">
-	<div class="maindiv">
-		<h1>Hello World!</h1>
+	<div class="maindiv" style="background-image: linear-gradient(0deg, #AABBCC, #DDF);">
+		<div class="flexrow">
+			<div style="border: 1px solid #AABBCC; width: 30%;">
+				<div style="padding: 2.5%; width: 95%;">
+					<h3>Privacy Policy</h3>
+					<h5>What Data Utor Collects</h5>
+					<p>Utor collects your name, zip code, university email, and subjects that you enter
+					into your profile. We also collect and save all messages and posts our
+					users make. We will not collect you exact location or any financial
+					information.</p>
+					<p>Any payment agreements with tutors should be handled outside of the Utor
+					website.</p>
+					<h5>Why We Collect This Data</h5>
+					<p>Any data we collect is intended to improve your experience on our site (for
+					example we collect your zip code to help connect you with tutors in your
+					area, and we collect university emails to verify our users to improve the
+					safety of our site. We collect and save interactions on our site to protect
+					our users from harassment.</p>
+					<h5>Your Rights to Your Data</h5>
+					<p>We want all of our users to be able to exercise control over the data we collect.
+					If you want data specific to you removed and deleted please contact us at our
+					support email: utor.service@gmail.com with your username and details on what
+					you want removed. If a user has violated US Law in any way we will turn
+					over any and all relevant data to authorities (ex. threats made over our
+					site, solicitation of illegal services).</p>
+				</div>
+			</div>
+			<div style="border: 1px solid #AABBCC; width: 40%;">
+				<div class="center text-center">
+					<h1>Welcome to Utor!</h1>
+					<hr/>
+					<img src="{% static 'main/UtorLogo.png' %}" style="width: 70%; margin-top: 20px;"/>
+				</div>
+				<div style="padding: 2.5%; width: 95%;">
+					<h3>Mission Statement</h3>
+					<p style="text-align: left;">Utor aims to increase academic achievement among college students by helping them to get academic help in the form of study groups and tutors.  Further, Utor aims to make the process of finding this help easy and efficient.</p>
+				</div>
+			</div>
+			<div style="border: 1px solid #AABBCC; width: 30%;">
+				<div style="padding: 2.5%; width: 95%;">
+					<h3>Terms of Service</h3>
+					<h5>Safety Policy</h5>
+					<p>If you experience harassment in any form please contact our email:
+					utor.service@gmail.com with your username and a description of the issue.</p>
+					<p>We will review the issue and take appropriate actions (see <em>Violating Utor’s Terms
+					of Service</em>).</p>
+					<h5>Honesty Policy</h5>
+					<p>Users are expected to be forthright and honest about what they are capable of
+					tutoring. Users who are reported as not knowing any relevant subject
+					matter in regards to what they claim to be able to tutor will be
+					reviewed by Utor’s team. If tutors on the site are in fact incapable of
+					tutoring they will be found in violation of our terms of service (see
+					<em>Violating Utor’s Terms of Service</em>).</p>
+					<h5>Violating Utor’s Terms of Service</h5>
+					<p>If we receive a complaint about a user account and determine that our policy
+					has been violated, the user in question will be removed from our site
+					immediately. In the event that another user’s safety was
+					threatened or a crime was committed we will turn over any relevant
+					evidence to authorities in an effort to protect our
+					users.</p>
+				</div>
+			</div>
+		</div>
+		<div class="center">
+			<div style="padding-left: 20px; padding-right: 20px;">
+				<h5>Credits</h5>
+				<p>Utor is a website created by Ben Lenox and Michael Sciole.</p>
+
+				<p>Utor uses the following libraries and services:
+					<a href="https://www.djangoproject.com/">Django</a>,
+					<a href="https://github.com/django/daphne">Daphne</a>,
+					<a href="https://github.com/django/channels">Channels</a>,
+					<a href="https://github.com/evansd/whitenoise">Whitenoise</a>,
+					and <a href="https://www.zipwise.com/">ZipWise</a>.
+				</p>
+
+				<p>In addition, Utor makes use of a
+					<a href="https://github.com/Hipo/university-domains-list">database containing university domains<a>
+						 available under the MIT license,
+			and <a href="https://gist.github.com/straker/ff00b4b49669ad3dec890306d348adc4#file-readme-md">
+						code written by Steven Lambert</a>
+						 available under the CC0 1.0 Universal License.</p>
+
+
+			</div>
+		</div>
 	</div>
 </div>
 {% endblock %}
-
