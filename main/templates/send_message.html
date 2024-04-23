@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ dmid.dmid }} Chat{% endblock %}
+
+{% block content %}
+<div class="outer">
+  <div class="maindiv">
+    <h3 style="text-align: center;">Chat</h3>
+    <div class="sidebyside" style="background: #9BD; width: 95%;">
+      <div class="groupchatouter" style="width: 80%;">
+        <div class="groupchatbox" id="groupchatbox">
+          {% for chat in dmid.all_messages %}
+            <div class="chatbox">
+              <div class="flexrow center">
+                <div style="width: 82%;">
+                  <h4 class="nomargin" style="width: 80%;"><a href="{% url 'profile' chat.sender.username %}" class="userlink">{{ chat.sender.username }}</a></h4>
+                </div>
+                <div style="text-align: right; font-size: 11px; color: gray; margin-right: 10px; margin-top: 4px;">{{ chat.time|date:"n/j/y g:i" }}&nbsp;{{ chat.time|date:"A" }}</div>
+              </div>
+              <p>{{ chat.message }}</p>
+              <hr/>
+            </div>
+          {% endfor %}
+        </div>
+        <div class="flexrow">
+          <textarea type="text" id="chatinput" rows="3" style="width: 90%;"></textarea><button style="width: 10%;" onclick="sendMessage();">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'main/direct_messaging.js' %}"
+                          defer
+                          data-dmid="{{ dmid.dmid }}"></script>
+{% endblock %}

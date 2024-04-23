@@ -1,0 +1,49 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="shortcut icon" type="image/png" href="{% static 'main/favicon.ico' %}" >
+    <link href="{% static 'main/style.css' %}" rel="stylesheet" type="text/css" />
+    <title>{% block title %}{% endblock title %}</title>
+
+  </head>
+  <body>
+  {% if request.user.is_authenticated %}
+  <nav class="navbar">
+    <ul>
+      <li style="margin-left: 30px; margin-right: 20px;"><div style="margin-top: 7px;"><img src="{% static 'main/UtorLogoNavBar.png' %}" width=80px /></div></li>
+      <li><a href="{% url 'index' %}">Home</a></li>
+      <li><a href="{% url 'study_groups' %}">Study Groups</a></li>
+      <li><a href="{% url 'tutor_search' %}">Find a Tutor</a></li>
+      <li><a href="{% url 'message_page' %}">Messages</a></li>
+      <li><a href="#">Test 4</a></li>
+      <li style="float: right; margin-right: 20px;"><a href="{% url 'logout' %}">Logout</a></li>
+      <li style="float: right;"><a href="{% url 'profile' request.user.username %}">My Profile</a></li>
+      <li style="float: right;"><a href="{% url 'notifications' %}">
+                                                                        {% if request.user.has_notifications %}
+                                                                        <span id="notification_dot"><img width=10px src="{% static 'main/red_dot.png' %}"/></span>
+                                                                        {% endif %}
+                                                                        Notifications
+                                                                        <span style="display: none;" id="num_notifications">{{ request.user.num_notifications }}</span>
+                                                                                  </a></li>
+    </ul>
+  </nav>
+  {% else %}
+  <nav class="navbar">
+    <ul>
+      <li style="margin-left: 30px; margin-right: 20px;"><div style="margin-top: 7px; margin-bottom: 3px;"><img src="{% static 'main/UtorLogoNavBar.png' %}" width=80px /></div></li>
+    </ul>
+  </nav>
+  {% endif %}
+  {% block content %}
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+
+
+  {% endblock content %}
+  {% block script %}{% endblock script %}
+  </body>
+</html>

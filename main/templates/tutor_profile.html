@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ user.username }}'s Profile{% endblock %}
+
+{% block content %}
+
+
+
+<div class="outer">
+  <div class="maindiv">
+    <div class="center text-center">
+      <h1>{{ user.username }}'s Profile</h1>
+    </div>
+
+	<div class="maindiv">
+		<table>
+		<tr>
+			<th>University</th>
+			<td>{{ user.university.name }}</td>
+		</tr>
+		<tr> 
+			<th>Bio</th>
+			<td class = "list">
+				<div id="bio">
+					<p id="bio_text">{{ user.bio }}</p>
+					{% if current_user %}
+					<button class="submit-button" id="b2" onclick="editBio();">Edit Bio</button>
+					{% endif %}
+				</div>
+			</td>
+		<tr>
+			<th valign=top>Currently Studying</th>
+			<td id="subject_list">
+			{% for subject in user.get_student_subjects %}
+				<div class="list" id="subject_{{ forloop.counter }}">
+					<div style="width: 90%;">{{ subject }}</div>
+					{% if current_user %}
+						<button id="rm-sub-button" class="rm-sub-button" data-subject = "{{ subject }}">Remove Subject</button>
+					{% endif %}
+				</div>
+			{% endfor %}
+			</td>
+		</tr>
+		<tr>
+			<th valign=top>Currently Tutoring
+			</th>
+			<td id="tutoring_list">
+			{% for tutoring in user.get_tutor_subjects %}
+				<div class="list" id="tutoring_{{ forloop.counter }}">
+					<div style="width: 90%;">{{ tutoring }}</div>
+					{% if current_user %}
+						<button id="rm-tut-button" class="rm-tut-button" data-tutoring = "{{ tutoring }}">Remove Subject</button>
+					{% endif %}
+				</div>
+			{% endfor %}
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2" class="text-center">
+					<p>Current Zip Code: <span id="zip_code_display">{{ user.zip_code }}</span></p>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2" class="text-center">
+				<p>{{ user.username}}'s Current Tutoring Rate: $<span id="pay_display">{{ user.tutoring_pay }}</span></p>
+			</td>
+		</tr>
+	</table>
+	<div>
+		<form method="post" action='{% url 'review_page' user.username %}'>
+			{% csrf_token %}
+			<button class="anchorbutton" type="submit">Submit a Review</button>
+		</form>
+	</div>
+  </div>
+</div>
+{% endblock %}

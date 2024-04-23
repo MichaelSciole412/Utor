@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ user.username }}'s Profile{% endblock %}
+
+{% block content %}
+
+
+
+<div class="outer">
+  <div class="maindiv">
+    <div class="center text-center">
+      <h1>{{ user.username }}'s Profile</h1>
+    </div>
+
+	<div class="maindiv">
+		<table>
+		<tr>
+			<th>University</th>
+			<td>{{ user.university.name }}</td>
+		</tr>
+		<tr> 
+			<th>Bio</th>
+			<td class = "list">
+				<div id="bio">
+					<p id="bio_text">{{ user.bio }}</p>
+					{% if current_user %}
+					<button class="submit-button" id="b2" onclick="editBio();">Edit Bio</button>
+					{% endif %}
+				</div>
+			</td>
+		<tr>
+			<th valign=top>Currently Studying</th>
+			<td id="subject_list">
+			{% for subject in user.get_student_subjects %}
+				<div class="list" id="subject_{{ forloop.counter }}">
+					<div style="width: 90%;">{{ subject }}</div>
+					{% if current_user %}
+						<button id="rm-sub-button" class="rm-sub-button" data-subject = "{{ subject }}">Remove Subject</button>
+					{% endif %}
+				</div>
+			{% endfor %}
+			{% if current_user %}
+				<div class="list" id="add_button">
+					<input class="text-input" type="text" id="new_subject" name="new_subject" required />
+					<button class="add-sub-button">Add Subject</button>
+				</div>
+			{% endif %}
+			</td>
+		</tr>
+		</table>
+
+		<div class="{% if user.tutoring_enabled %}maindiv{% else %}hidden{% endif %}" name="tutoring-section">
+			<table>
+				<tr>
+					<th valign=top>Currently Tutoring
+						<p>enter exact course title<br>(ex. Calculus 2)</p>
+					</th>
+					<td id="tutoring_list">
+					{% for tutoring in user.get_tutor_subjects %}
+						<div class="list" id="tutoring_{{ forloop.counter }}">
+							<div style="width: 90%;">{{ tutoring }}</div>
+							{% if current_user %}
+								<button id="rm-tut-button" class="rm-tut-button" data-tutoring = "{{ tutoring }}">Remove Subject</button>
+							{% endif %}
+						</div>
+					{% endfor %}
+					{% if current_user %}
+						<div class="list" id="tut_button">
+							<input class="text-input" type="text" id="new_tutoring" name="new_tutoring" />
+							<button class="add-tut-button">Add Subject</button>
+						</div>
+					{% endif %}
+					</td>
+				</tr>
+
+				<tr>
+					<th valign=top>Enter Zip Code</th>
+					<td>
+						<div class="list">
+							<div style="width: 100%;">
+									<input class="text-input" type="text" id="zip_code" name="zip_code" step="0.01">
+									<button class="submit-button" id="zip_button" onclick="saveZip();">Save</button>
+								</form>
+							</div>
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="2" class="text-center">
+							<p>Current Zip Code: <span id="zip_code_display">{{ user.zip_code }}</span></p>
+					</td>
+				</tr>
+
+				<tr>
+					<th valign=top>Tutoring Rate (Optional)</th>
+					<td>
+						<div class="list">
+							<div style="width: 100%;">
+									<input class="text-input" type="text" id="tutoring_rate" name="tutoring_rate" step="0.01">
+									<button class="submit-button" id="pay_button" onclick="savePay();">Create Rate</button>
+								</form>
+							</div>
+						</div>
+					</td>
+				</tr>
+			
+				<tr>
+					<td colspan="2" class="text-center">
+						<p>{{ user.username}}'s Current Tutoring Rate: $<span id="pay_display">{{ user.tutoring_pay }}</span></p>
+					</td>
+				</tr>
+				<tr>
+					<td class="realllycenter" colspan="2">
+						<a href="{% url 'user_reviews' user.username %}" class="anchorbutton">View User Reviews</a>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<form method="post" action="{% url 'enable_tutoring' user.username %}">
+			{% csrf_token %}
+			{% if user.tutoring_enabled %}
+				<button class="anchorbutton" type="submit">Disable Tutoring </button>
+			{% else %}
+				<button class="anchorbutton" type="submit">Enable Tutoring</button>
+			{% endif %}
+		</form>
+	</div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="{% static 'main/profile.js' %}"
+                          defer
+                          data-username="{{ user.username }}" 
+						  data-zip="{{user.zip_code}}"
+						  data-pay="{{user.tutoring_pay}}"></script>{% endblock %}

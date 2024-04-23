@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Review {{tutor.username}}{% endblock %}
+
+{% block content %}
+<div class="outer">
+	<div class="maindiv">
+		<div class="center text-center">
+			<h1> Leave a Review for {{tutor.username}}</h1>
+			<p>To leave a review for this tutor give a star rating for each question</p>
+			<p>(Reviews are automatically updated on this page, no submission needed)</p>
+		</div>
+
+		<div class="maindiv">
+			<form id="ratings_form" method='POST'>
+			{% csrf_token %}
+				<h2>Overall Rating</h2>
+				<div id="rating_bar">
+					<span id="overall_rate_5" class="overall_rating"></span>
+					<span id="overall_rate_4" class="overall_rating"></span>
+					<span id="overall_rate_3" class="overall_rating"></span>
+					<span id="overall_rate_2" class="overall_rating"></span>
+					<span id="overall_rate_1" class="overall_rating"></span>
+				</div>
+
+				<h2>Tutoring Effectiveness</h2>
+				<div id="rating_bar"> 
+					<span id="effective_rate_5" class="effective_rating"></span>
+					<span id="effective_rate_4" class="effective_rating"></span>
+					<span id="effective_rate_3" class="effective_rating"></span>
+					<span id="effective_rate_2" class="effective_rating"></span>
+					<span id="effective_rate_1" class="effective_rating"></span>
+				</div>
+
+				<h2>Timeliness</h2>
+				<div id="rating_bar"> 
+					<span id="timeliness_rate_5" class="timeliness_rating"></span>
+					<span id="timeliness_rate_4" class="timeliness_rating"></span>
+					<span id="timeliness_rate_3" class="timeliness_rating"></span>
+					<span id="timeliness_rate_2" class="timeliness_rating"></span>
+					<span id="timeliness_rate_1" class="timeliness_rating"></span>
+				</div>
+
+				<h2>Patience</h2>
+				<div id="rating_bar"> 
+					<span id="patience_rate_5" class="patience_rating"></span>
+					<span id="patience_rate_4" class="patience_rating"></span>
+					<span id="patience_rate_3" class="patience_rating"></span>
+					<span id="patience_rate_2" class="patience_rating"></span>
+					<span id="patience_rate_1" class="patience_rating"></span>
+				</div>
+
+				<h2>Knowledge</h2>
+				<div id="rating_bar"> 
+					<span id="knowledge_rate_5" class="knowledge_rating"></span>
+					<span id="knowledge_rate_4" class="knowledge_rating"></span>
+					<span id="knowledge_rate_3" class="knowledge_rating"></span>
+					<span id="knowledge_rate_2" class="knowledge_rating"></span>
+					<span id="knowledge_rate_1" class="knowledge_rating"></span>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'main/reviews.js'%}"
+										defer
+										data-username="{{ user.username }}"
+										data-tutorname="{{ tutor.username }}" 
+										data-overall = {{ review.overall }} 
+										data-patience = {{ review.patience }}
+										data-knowledge = {{ review.knowledge }}
+										data-effective = {{ review.effective }}
+										data-timeliness = {{ review.timeliness }}></script>
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ group.name }} Group Chat{% endblock %}
+
+{% block content %}
+<div class="outer">
+  <div class="maindiv">
+    <div class="center">
+      <a style="float: left;" class="anchorbutton" href="{% url 'view_group' group.id %}">Back</a>
+      <h3 style="text-align: center;">{{ group.name }} Group Chat</h3>
+    </div>
+
+    <div class="sidebyside" style="background: #9BD; width: 95%;">
+      <div class="groupchatouter" style="width: 80%;">
+        <div class="groupchatbox" id="groupchatbox">
+          {% for chat in group.groupchat_set.all %}
+            <div class="chatbox">
+              <div class="flexrow center">
+                <div style="width: 82%;">
+                  <h4 class="nomargin" style="width: 80%;"><a href="{% url 'profile' chat.sender.username %}" class="userlink">{{ chat.sender.username }}</a></h4>
+                </div>
+                <div style="text-align: right; font-size: 11px; color: gray; margin-right: 10px; margin-top: 4px;">{{ chat.time|date:"n/j/y g:i" }}&nbsp;{{ chat.time|date:"A" }}</div>
+              </div>
+              <p>{{ chat.message }}</p>
+              <hr/>
+            </div>
+          {% endfor %}
+        </div>
+        <div class="flexrow">
+          <textarea type="text" id="chatinput" rows="3" style="width: 90%;"></textarea><button style="width: 10%;" onclick="sendMessage();">Send</button>
+        </div>
+      </div>
+      <div class="chatusersdisplay" style="width: 20%;" id="chatusersdisplay">
+        {% for usr in group.currentgroupchatuser_set.all %}
+          <div id="user{{ usr.user.id }}"><a class="userlink" href="{% url 'profile' usr.user.username %}">{{ usr.user.username }}</a><hr/></div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'main/group_chat.js' %}"
+                          defer
+                          data-groupid="{{ group.id }}"
+                          data-groupname="{{ group.name }}"></script>
+{% endblock %}

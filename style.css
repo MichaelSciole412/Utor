@@ -1,0 +1,288 @@
+body {
+  background: #BDF;
+  font-family: Tahoma, sans-serif;
+}
+
+.outer {
+  width: 100%;
+  display: flex;
+}
+
+.center {
+  width: 100%;
+  display: block;
+}
+
+.maindiv {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  margin: auto;
+  background: #DDF;
+  border-radius: 50px;
+  padding: 30px;
+}
+
+
+.hidden {
+    display: none;
+}
+
+.sidebyside {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  margin: auto;
+  background: #BBD;
+  border-radius: 50px;
+  padding: 30px;
+}
+
+/* NAVBAR */
+
+.navbar ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: #346;
+}
+
+.navbar li {
+  float: left;
+}
+
+.navbar li a {
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 14px 16px;
+  text-decoration: none;
+}
+
+.navbar li a:hover {
+  background-color: #111;
+}
+
+/* FORMS */
+
+.form-form {
+  margin: auto;
+}
+
+.form-table th {
+  text-align: center;
+}
+
+.form-table td,th {
+  padding: 10px;
+}
+
+form div {
+  padding: 10px;
+  display: block;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  margin: auto;
+  background: #DDF;
+  border-radius: 50px;
+  padding: 30px;
+}
+
+.smallform {
+  min-width: 40%;
+  max-width: 50%;
+}
+
+.miniform {
+  width: 100%;
+  display: flex;
+  flex-direction: horizontal;
+}
+
+[name="new_subject"] {
+  width: 100%;
+}
+
+.fullwidth-text-input input[type="text"] {
+  width: 98%;
+}
+
+.fullwidth-text-input input[name="course"] {
+  width: 30%;
+}
+
+/* MISC */
+.tutor-table th{
+	width: 25%;
+}
+
+
+
+.text-input {
+  width: 100%;
+}
+
+.submit-button {
+  padding: 5px;
+}
+
+.grouplist {
+  display: flex;
+  flex-direction: column;
+}
+
+.flexrow {
+  display: flex;
+  flex-direction: row;
+}
+
+.cardlist {
+  background: #FFF;
+  padding: 10px;
+  border-radius: 8px;
+  margin: auto;
+  margin-top: 2px;
+  width: 95%;
+}
+
+.cardlist2 {
+  background: #FFF;
+  padding: 10px;
+  padding-left: 40px;
+  border-radius: 8px;
+  margin: auto;
+  margin-top: 2px;
+  width: 55%;
+}
+
+.list {
+  width: 50%;
+  background: #FFF;
+  padding: 10px;
+  border-radius: 8px;
+  margin: 2px;
+  display: flex;
+  flex-direction: horizontal;
+}
+
+.list2 {
+  width: 90%;
+  background: #FFF;
+  padding: 5px;
+  border-radius: 4px;
+  margin: 2px;
+  display: flex;
+  flex-direction: horizontal;
+}
+
+.description {
+  background: #EEF;
+}
+
+.text-1 * {
+  padding: 15px;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.alert-message {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  background: #9AC;
+  padding: 15px;
+  border-radius: 8px;
+  width: 95%;
+}
+
+.innersidebyside {
+  flex: 1;
+  padding: 10px;
+  background: #DDF;
+  border-radius: 10px;
+  margin: 1px;
+  max-width: 50%;
+}
+
+textarea {
+  resize: vertical;
+}
+
+.biglink {
+  text-decoration: none;
+  color: inherit;
+}
+
+.biglink .cardlist:hover {
+  background: #EEE;
+  transition: all 0.2s;
+}
+
+.anchorbutton {
+  text-decoration: none;
+  font-weight: bold;
+  color: white;
+  padding: 10px;
+  border-radius: 8px;
+  background: #346;
+}
+
+button.anchorbutton {
+  border: none;
+  cursor: pointer;
+}
+input.anchorbutton {
+  border: none;
+  cursor: pointer;
+}
+
+.anchorbutton:hover {
+  transition: all 0.2s;
+  background: #5566AA;
+}
+
+.clickedbutton {
+  text-decoration: none;
+  color: #124;
+  font-weight: bold;
+  padding: 8px;
+  border-radius: 8px;
+  background: #BBF;
+  border: 2px solid #124;
+}
+
+.userlink {
+  text-decoration: none;
+}
+
+.xbutton {
+  background: rgba(0, 0, 0, 0);
+  border: none;
+  float: right;
+}
+
+#notification_info {
+  color: red;
+  font-size: 15pt;
+}
+
+#desc_textarea {
+  width: 100%;
+}
+
+#desc {
+  background: #FFF;
+  padding: 5px;
+  border-radius: 5px;
+}
+
+#desc_text {
+  word-break: break-word;
+  white-space: normal;
+  width: 100%;
+}

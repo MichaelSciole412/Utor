@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Account{% endblock %}
+
+{% block content %}
+<div class="outer">
+  <div class="form smallform">
+    <div class="center text-center">
+    <h2>Create An Account</h2>
+    </div>
+    <form class="form-form" action="{% url 'create_account' %}" method="POST">
+      {% csrf_token %}
+      <table class="form-table">
+      {% for field in form %}
+        <tr>
+          <th style="text-align:left;">{{ field.label }}</th>
+          <td>{{ field }}</td>
+          <td>
+            {%for error in field.errors %}
+              <p>{{ error }}</p>
+            {% endfor %}
+            {% if field.name == "password" %}
+              {%for error in form.non_field_errors %}
+                <p>{{ error }}</p>
+              {% endfor %}
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </table>
+    <div class="center text-center">
+      <input type="submit" value="Submit" class="anchorbutton" />
+    </div>
+    </form>
+    <div>
+      <a href="{% url 'login' %}" class="anchorbutton">Login</a>
+    </div>
+  </div>
+<div>
+{% endblock %}

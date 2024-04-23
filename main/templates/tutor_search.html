@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<div class="search_box">
+	<div class="tutor smalltutor">
+		<form action="{% url 'tutor_search' %}" method="get">
+			<label for="subject">What subject do you need help with?</label>
+			<br>
+			<input style="margin:auto;" type="text" name="subject" id="subject" required>
+			<br>
+			<label for="filter-type">What should we search by?</label>
+			<br>
+			<select class="dropDown" name="filter-type" id="filter-type" onchange="show_filter()">
+				<option class="selection" value="no-filter">-- No filter --</option>
+				<option class="selection" value="username">Username</option>
+				<option class="selection" value="zip-code">Zip Code</option>
+			</select>
+			<br>
+			<div id="filter-disp" style="display: none;">
+				<input type="text" name="filter-query" id="filter-query">
+			</div>
+			<br>
+			<button class="anchorbutton" type="submit">Search</button>
+		</form>
+		
+		{% if query %}
+			<h2>Results matching search:</h2>
+
+			{% if tutors %}
+				<table class="table">
+					<thead>
+						<tr style="text-align: center;">
+							<th>Username</th>
+							<th>Institution</th>
+							<th>Requested Pay Rate</th>
+							<th>Tutoring Profile</th>
+							<th>Chat</th>
+							<th>Average Rating</th>
+						</tr>
+					</thead>
+					<tbody>
+						{% for tutor in tutors %}
+							<tr style="text-align: center;">
+								<td>{{ tutor.username }}</td>
+								<td>{{ tutor.university.name }} </td>
+								<td>{{ tutor.tutoring_pay }}</td>
+								<td>
+									<form method="post" action='{% url 'tutor_profile' tutor.username %}'>
+										{% csrf_token %}
+										<button class="anchorbutton" type="submit">View</button>
+									</form>
+								</td>
+								<td>
+									<form method="post" action='{% url 'create_message_group' tutor.username %}'>
+										{% csrf_token %}
+										<button class="anchorbutton" type="submit">Message</button>
+									</form>
+								</td>
+								<td>
+									{% if tutor.average_rating %}
+										{{ tutor.average_rating }}/5.0
+									{% else %}
+										-/5
+									{% endif %}
+								</td>
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			{% else %}
+				<p>No tutors found for "{{ query }}"</p>
+			{% endif %}
+		{% else %}
+				<p>Look up a tutor!</p>
+		{% endif %}
+	</div>
+</div>
+{% endblock %}
+
+{% block script %}
+	<script src="{% static 'main/tutor_search.js' %}"></script>
+{% endblock %}

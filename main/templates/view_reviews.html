@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Reviews for {{user.username}}{% endblock %}
+
+{% block content %}
+<div class="maindiv">
+    {% if received_reviews %}
+        <ul>
+            {% for review in received_reviews %}
+                <li colspan="2" style="realllycenter">
+					<strong>Created On:</strong> {{ review.created_at }} <br>
+                    <strong>Overall Rating:</strong> {{ review.overall }} <br>
+                    <strong>Effective Rating:</strong> {{ review.effective }} <br>
+                    <strong>Timeliness Rating:</strong> {{ review.timeliness }} <br>
+                    <strong>Patience Rating:</strong> {{ review.patience }} <br>
+                    <strong>Knowledge Rating:</strong> {{ review.knowledge }}
+                </li>
+				<br>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No reviews found.</p>
+    {% endif %}
+</div>
+{% endblock %}

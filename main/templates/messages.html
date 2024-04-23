@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <h2 class="messages" >Your Conversations</h2>
+  <ul class="convos">
+    {% for dm in user_dms %}
+      <li class="convo-list"><a class="select-convo" href="{% url 'send_message' dmid=dm.dmid %}">
+		{% if dm.tutor == request.user.username %}
+       		{{dm.student}}
+		{% else %}
+			{{dm.tutor}}
+		{% endif %}
+      </a></li>
+    {% endfor %}
+  </ul>
+{% endblock %}

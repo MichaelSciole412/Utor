@@ -1,1 +1,43 @@
-login
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="outer">
+  <div class="form smallform">
+    <div class="text-center center">
+      <img src="{% static 'main/UtorLogo.png' %}" width=150px />
+    </div>
+    <div class="center text-center">
+      <h2>Login</h2>
+    </div>
+    {% if message %}
+    <div class="alert-message">
+      {{ message }}
+    </div>
+    {% elif form.username.errors %}
+    <div class="alert-message">
+      {{ form.username.errors.0 }}
+    </div>
+    {% endif %}
+    <form class="form-form" action="{% url 'login' %}" method="POST">
+      {% csrf_token %}
+      <table class="form-table">
+      {% for field in form %}
+        <tr>
+          <th style="text-align:left;">{{ field.label }}</th>
+          <td>{{ field }}</td>
+        </tr>
+      {% endfor %}
+      </table>
+    <div class="center text-center">
+      <input type="submit" value="Submit" class="anchorbutton"/>
+    </div>
+    </form>
+    <div>
+      <a class="anchorbutton" href="{% url 'create_account' %}">Create Account</a>
+    </div>
+  </div>
+<div>
+{% endblock %}
+

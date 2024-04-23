@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block title %}Account Verified{% endblock %}
+
+{% block content %}
+<div class="outer">
+  <div class="form smallform">
+    <div class="center text-center">
+      <h2>Account Verified!</h2>
+    </div>
+    <div class="center text-1">
+      <p>Thank you, {{ username }}.</p>
+      <p>Your account has been verified!</p>
+    </div>
+    <div class="text-1">
+      <a href="{% url 'login' %}">Login</a>
+    </div>
+  </div>
+<div>
+{% endblock %}
