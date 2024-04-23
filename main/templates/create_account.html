@@ -31,8 +31,8 @@
       {% endfor %}
       </table>
     <div>
-      <p><input type="checkbox" required /> I agree to Utor's <a href="{% static 'Terms_of_Service.txt' %}">Terms of Service</a></p>
-      <p><input type="checkbox" required /> I agree to Utor's <a href="{% static 'Privacy_Policy.txt' %}">Privacy Policy</a></p>
+      <p><label for="tos" style="text-align: left;"><input type="checkbox" id="tos" required /> I agree to Utor's <a href="{% static 'Terms_of_Service.txt' %}" target="blank">Terms of Service</a></label></p>
+      <p><label for="pp" style="text-align: left;"><input type="checkbox" id="pp" required /> I agree to Utor's <a href="{% static 'Privacy_Policy.txt' %}" target="blank">Privacy Policy</a></label></p>
     </div>
     <div class="center text-center">
       <input type="submit" value="Submit" class="anchorbutton" />
