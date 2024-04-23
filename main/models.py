@@ -141,6 +141,7 @@ class Notification(models.Model):
     regarding_group = models.ForeignKey(StudyGroup, null=True, on_delete=models.CASCADE, related_name="gnot_set")
     regarding_user = models.ForeignKey(User, null=True, on_delete=models.CASCADE, related_name="regu_set")
     regarding_post = models.ForeignKey(GroupPost, null=True, on_delete=models.CASCADE, related_name="regp_set")
+    regarding_dm = models.CharField(max_length=100, default="")
 
 class CurrentGroupChatUser(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

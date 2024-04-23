@@ -29,6 +29,15 @@ def create_message_group(request, username):
     existing_group = Recipient_Group.objects.filter(dmid=dmid).first()
     if existing_group:
         return redirect(reverse("message_page"))
+    
+    notification = Notification()
+    notification.user = tutor
+    notification.n_type = "New Chat"
+    notification.title = "New Chat"
+    notification.text = "You have a new chat with {}".format(user.username)
+    notification.regarding_user = user
+    notification.regarding_dm = dmid
+    notification.save()
 
     recipient_group = Recipient_Group()
     recipient_group.tutor = tutor.username
