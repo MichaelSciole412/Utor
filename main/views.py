@@ -12,7 +12,9 @@ from .misc_utils import *
 from django.core.mail import send_mail
 import time
 import re
-from django.db.models import Avg
+import requests
+from django.db.models import Case, When, Value, IntegerField, Avg
+
 # Imports for messaging
 import asyncio
 from typing import AsyncGenerator
@@ -23,13 +25,13 @@ def create_message_group(request, username):
     user = get_object_or_404(User, username=request.user.username)
     tutors = User.objects.filter(username=username)
     tutor = tutors.first()
-    
+
     dmid = dm_id_gen(tutor, user)
 
     existing_group = Recipient_Group.objects.filter(dmid=dmid).first()
     if existing_group:
         return redirect(reverse("message_page"))
-    
+
     notification = Notification()
     notification.user = tutor
     notification.n_type = "New Chat"
@@ -61,7 +63,7 @@ def send_message(request, dmid):
 def review_page(request, tutor):
     tutor_user = get_object_or_404(User, username=tutor)
     reviews = Review.objects.filter(reviewed=tutor_user, reviewer=request.user)
-    
+
     if not reviews:
         review = Review.objects.create(
 				reviewer=request.user,
@@ -74,7 +76,7 @@ def review_page(request, tutor):
 			)
     else:
         review = reviews[0]
-        
+
     return render(request, 'review.html', {'tutor': tutor_user, 'review': review})
 
 def user_reviews(request, username):
@@ -189,9 +191,6 @@ def enable_tutoring(request, username=""):
 
 ZIP_WISE_KEY = 'atue9sehje6s9kav'
 ZIP_WISE_API_ENDPOINT = 'https://www.zipwise.com/webservices/'
-import requests
-from django.db.models import Case, When, Value, IntegerField
-
 @ensure_authenticated
 def tutor_search(request):
 	query = request.GET.get('subject', '')
@@ -223,11 +222,11 @@ def tutor_search(request):
 			)
 
 			tutors = tutors.filter(zip_code__in=ordered_prox).order_by(ordering)
-    
+
 	for tutor in tutors:
 		reviews = Review.objects.filter(reviewed=tutor).exclude(overall=0)
 		tutor.average_rating = reviews.aggregate(Avg('overall'))['overall__avg']
-  
+
 	return render(request, 'tutor_search.html', {'tutors': tutors, 'query': query, 'filter_type': filter_type, 'filter_query': filter_query})
 
 @csrf_exempt
