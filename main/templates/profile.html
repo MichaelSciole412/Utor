@@ -53,14 +53,6 @@
 		<div class="{% if user.tutoring_enabled %}maindiv{% else %}hidden{% endif %}" name="tutoring-section">
 			<table>
 				<tr>
-					<td>
-						<form method="post" action="{% url 'user_reviews' user.username %}">
-							{% csrf_token %}
-							<button class="anchorbutton" type="submit">View User Reviews</button>
-						<form>
-					</td>
-				</tr>
-				<tr>
 					<th valign=top>Currently Tutoring
 						<p>enter exact course title<br>(ex. Calculus 2)</p>
 					</th>
@@ -116,6 +108,11 @@
 				<tr>
 					<td colspan="2" class="text-center">
 						<p>{{ user.username}}'s Current Tutoring Rate: $<span id="pay_display">{{ user.tutoring_pay }}</span></p>
+					</td>
+				</tr>
+				<tr>
+					<td class="realllycenter" colspan="2">
+						<a href="{% url 'user_reviews' user.username %}" class="anchorbutton">View User Reviews</a>
 					</td>
 				</tr>
 			</table>
