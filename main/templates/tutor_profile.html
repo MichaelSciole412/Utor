@@ -42,36 +42,45 @@
 			{% endfor %}
 			</td>
 		</tr>
-		<tr>
-			<th valign=top>Currently Tutoring
-			</th>
-			<td id="tutoring_list">
-			{% for tutoring in user.get_tutor_subjects %}
-				<div class="list" id="tutoring_{{ forloop.counter }}">
-					<div style="width: 90%;">{{ tutoring }}</div>
-					{% if current_user %}
-						<button id="rm-tut-button" class="rm-tut-button" data-tutoring = "{{ tutoring }}">Remove Subject</button>
-					{% endif %}
-				</div>
-			{% endfor %}
-			</td>
-		</tr>
-		<tr>
-			<td colspan="2" class="text-center">
-					<p>Current Zip Code: <span id="zip_code_display">{{ user.zip_code }}</span></p>
-			</td>
-		</tr>
-		<tr>
-			<td colspan="2" class="text-center">
-				<p>{{ user.username}}'s Current Tutoring Rate: $<span id="pay_display">{{ user.tutoring_pay }}</span></p>
-			</td>
-		</tr>
 	</table>
-	<div>
-		<form method="post" action='{% url 'review_page' user.username %}'>
-			{% csrf_token %}
-			<button class="anchorbutton" type="submit">Submit a Review</button>
-		</form>
+	<div class="{% if user.tutoring_enabled %}maindiv{% else %}hidden{% endif %}" name="tutoring-section">
+		<table>
+			<tr>
+				<th valign=top>Currently Tutoring
+				</th>
+				<td id="tutoring_list">
+				{% for tutoring in user.get_tutor_subjects %}
+					<div class="list" id="tutoring_{{ forloop.counter }}">
+						<div style="width: 90%;">{{ tutoring }}</div>
+						{% if current_user %}
+							<button id="rm-tut-button" class="rm-tut-button" data-tutoring = "{{ tutoring }}">Remove Subject</button>
+						{% endif %}
+					</div>
+				{% endfor %}
+				{% if not user.get_tutor_subjects %}
+				<div class="list" id="tutoring_{{ forloop.counter }}">
+					<div style="width: 90%;">No Currently Listed Subjects</div>
+				</div>
+				{% endif %}
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2" class="text-center">
+						<p>Current Zip Code: <span id="zip_code_display">{{ user.zip_code }}</span></p>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2" class="text-center">
+					<p>{{ user.username}}'s Current Tutoring Rate: $<span id="pay_display">{{ user.tutoring_pay }}</span></p>
+				</td>
+			</tr>
+		</table>
+		<div>
+			<form method="post" action='{% url 'review_page' user.username %}'>
+				{% csrf_token %}
+				<button class="anchorbutton" type="submit">Submit a Review</button>
+			</form>
+		</div>
 	</div>
   </div>
 </div>
