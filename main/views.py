@@ -169,7 +169,9 @@ def profile_by_id(request, user_id):
 @ensure_authenticated
 def profile(request, username):
     usr = get_object_or_404(User, username=username)
-    current_user = usr.username == request.user.username
+    if usr.username != request.user.username:
+        return render(request, "tutor_profile.html", context={"user": usr})
+    current_user = usr.username
     return render(request, "profile.html", context={"user": usr, "current_user": current_user})
 
 def tutor_profile(request, tutor):
