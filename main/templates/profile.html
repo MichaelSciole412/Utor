@@ -117,14 +117,16 @@
 				</tr>
 			</table>
 		</div>
+    {% if request.user == user %}
 		<form method="post" action="{% url 'enable_tutoring' user.username %}">
 			{% csrf_token %}
 			{% if user.tutoring_enabled %}
-				<button class="anchorbutton" type="submit">Disable Tutoring </button>
+				<button class="anchorbutton" type="submit">Disable Tutoring</button>
 			{% else %}
 				<button class="anchorbutton" type="submit">Enable Tutoring</button>
 			{% endif %}
 		</form>
+    {% endif %}
 	</div>
   </div>
 </div>
