@@ -40,6 +40,11 @@
 					{% endif %}
 				</div>
 			{% endfor %}
+      {% if not user.get_student_subjects and request.user != user %}
+        <div class="list" id="subject_{{ forloop.counter }}">
+          <div style="width: 90%;">No Current Subjects</div>
+        </div>
+      {% endif %}
 			{% if current_user %}
 				<div class="list" id="add_button">
 					<input class="text-input" type="text" id="new_subject" name="new_subject" required />
